@@ -3,7 +3,7 @@ import { Document, Schema, Types, Model } from 'mongoose'
 import MongooseDelete from 'mongoose-delete'
 
 /**
- * @description Post interface
+ * @description The post document interface
  * @interface Post
  * @property {string} _id
  * @property {string} title
@@ -12,16 +12,24 @@ import MongooseDelete from 'mongoose-delete'
  * @property {string} excerpt
  * @property {string} featuredImage
  * @property {string} status
+ * @property {Function} generateSlug
  */
- export interface PostInterface extends Document {
+ interface PostDocument extends Document {
     _id: Types.ObjectId,
     title: string,
     slug?: string,
     content?: string,
     excerpt?: string,
     featuredImage?: string,
-    status?: string
+    status?: string,
+    generateSlug: Function
 }
+
+/**
+ * @description The post model interface
+ * @extends Model<PostDocument>
+ */
+interface PostModel extends Model<PostDocument> {}
 
 /**
  * @description Post database schema
@@ -30,7 +38,7 @@ import MongooseDelete from 'mongoose-delete'
  * @extends Schema
  * @see https://mongoosejs.com/docs/schematypes.html
  */
-const PostSchema: Schema<PostInterface> = new Schema<PostInterface, Model<PostInterface>>({
+const PostSchema: Schema<PostDocument> = new Schema<PostDocument, Model<PostDocument>>({
     title: {
         type: String,
         required: true
@@ -74,7 +82,12 @@ PostSchema.methods.generateSlug = (title: string): string => title.toLowerCase()
  */
 PostSchema.pre('save', async function(next) {
     if(!this.slug) {
-        // let slug = this.generateSlug(this.title)
+        let slug = this.generateSlug(this.title)
+
+        const sameSlugCount = Post.count({ slug })
+        if(sameSlugCount) slug = `${slug}-${sameSlugCount}`
+
+        this.slug = slug
     }
 })
 
@@ -85,6 +98,6 @@ PostSchema.pre('save', async function(next) {
  * @extends Model
  * @see https://mongoosejs.com/docs/models.html
  */
-const Post: Model<PostInterface> = mongoose.models.User || mongoose.model<PostInterface>('Post', PostSchema)
+const Post: Model<PostDocument> = mongoose.models.User || mongoose.model<PostDocument, PostModel>('Post', PostSchema)
 
 export default Post

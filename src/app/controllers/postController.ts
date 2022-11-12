@@ -14,7 +14,7 @@ export const fetch = async (req: Request, res: Response): Promise<void> => {
 
         res.json({
             data: posts,
-            message: 'Third party providers fetched successfully'
+            message: 'Posts fetched successfully'
         })
     } catch (error) {
         res.status(500).json({
@@ -41,6 +41,20 @@ export const create = async (req: Request, res: Response): Promise<void> => {
             })
             return
         }
+
+        const post = new Post({
+            status,
+            title,
+            excerpt,
+            content,
+            featuredImage
+        })
+        await post.save()
+
+        res.status(201).json({
+            data: post,
+            message: 'Post created successfully'
+        })
     } catch (error) {
         res.status(500).json({
             message: error.message
