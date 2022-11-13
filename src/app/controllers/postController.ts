@@ -1,6 +1,5 @@
 import { Request, Response } from 'express'
 import Post from '@src/app/models/post'
-import { logger } from '@src/lib/winston'
 
 /**
  * @description Show list of all available post

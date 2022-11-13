@@ -1,10 +1,11 @@
 import mongoose from '@src/lib/mongoose'
 import { Document, Schema, Types, Model } from 'mongoose'
 import MongooseDelete from 'mongoose-delete'
+import { generateSlug } from '@src/lib/utils'
 
 /**
  * @description The post document interface
- * @interface Post
+ * @interface PostDocument
  * @property {string} _id
  * @property {string} title
  * @property {string} slug
@@ -27,6 +28,7 @@ import MongooseDelete from 'mongoose-delete'
 
 /**
  * @description The post model interface
+ * @interface PostModel
  * @extends Model<PostDocument>
  */
 interface PostModel extends Model<PostDocument> {}
@@ -69,26 +71,24 @@ const PostSchema: Schema<PostDocument> = new Schema<PostDocument, Model<PostDocu
  * @description Register soft delete plugin
  * @see https://www.npmjs.com/package/mongoose-delete
  */
- PostSchema.plugin(MongooseDelete)
-
- /**
-  * @description Register method to generate post slug
-  * @see https://mongoosejs.com/docs/api.html#schema_Schema-queue
-  */
-PostSchema.methods.generateSlug = (title: string): string => title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')
+PostSchema.plugin(MongooseDelete)
 
 /**
- * @description Register pre hook method to automatically generate slug when creating a post.
+ * @description Generate slug before save
+ * @function generateSlug
+ * @returns {void}
+ * @see https://mongoosejs.com/docs/middleware.html
  */
-PostSchema.pre('save', async function(next) {
+PostSchema.pre('save', async function (this: PostDocument, next) {
     if(!this.slug) {
-        let slug = this.generateSlug(this.title)
+        let slug = generateSlug(this.title)
 
         const sameSlugCount = await Post.count({ slug })
         if(sameSlugCount) slug = `${slug}-${sameSlugCount}`
 
         this.slug = slug
     }
+    next()
 })
 
 /**
