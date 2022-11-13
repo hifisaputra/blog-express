@@ -1,7 +1,7 @@
 import mongoose from '@src/lib/mongoose'
 import { Document, Schema, Types, Model } from 'mongoose'
 import MongooseDelete from 'mongoose-delete'
-import { generateSlug } from '@src/lib/utils'
+import { strToSlug } from '@src/lib/utils'
 
 /**
  * @description The category document interface
@@ -44,20 +44,29 @@ const CategorySchema: Schema<CategoryDocument> = new Schema<CategoryDocument, Mo
 }, { timestamps: true })
 
 /**
+ * @description Register generate slug method
+ * @method generateSlug
+ * @returns {string} The generated slug
+ */
+CategorySchema.methods.generateSlug = async function(title: string, count: number = 0): Promise<string> {
+    let slug = strToSlug(title + (count > 0 ? `-${count}` : ''))
+
+    const sameSlugCount = await Category.count({ slug })
+    if(sameSlugCount) {
+        return this.generateSlug(title, count + 1)
+    }
+
+    return slug
+}
+
+/**
  * @description Generate slug before save
  * @function generateSlug
  * @returns {void}
  * @see https://mongoosejs.com/docs/middleware.html
  */
 CategorySchema.pre('save', async function (this: CategoryDocument, next) {
-    if(!this.slug) {
-        let slug = generateSlug(this.name)
-
-        const sameSlugCount = await Category.count({ slug })
-        if(sameSlugCount) slug = `${slug}-${sameSlugCount}`
-
-        this.slug = slug
-    }
+    this.slug = await this.generateSlug(this.name)
     next()
 })
 

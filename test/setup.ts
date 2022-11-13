@@ -2,6 +2,7 @@ import { connectDB, closeDB } from '../src/app'
 import server from '../src/app'
 import supertest from 'supertest'
 import User from '../src/app/models/user'
+import Category from '../src/app/models/category'
 import { generateToken } from '../src/lib/auth'
 
 /**
@@ -17,6 +18,15 @@ let userToken = ''
 
 export const defaultUser = userData
 
+const postCategories = [
+    'Technology',
+    'Business',
+    'Entertainment',
+    'Health',
+    'Science',
+    'Sports',
+]
+
 beforeAll(async () => {
     await connectDB()
 
@@ -26,6 +36,14 @@ beforeAll(async () => {
         await user.save()
     }
     userToken = await generateToken(user)
+
+    postCategories.forEach(async (name) => {
+        let category = await Category.findOne({ name })
+        if (!category || !category._id) {
+            category = new Category({ name })
+            await category.save()
+        }
+    })
 })
 
 afterAll(async () => {

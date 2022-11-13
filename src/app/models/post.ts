@@ -1,7 +1,7 @@
 import mongoose from '@src/lib/mongoose'
 import { Document, Schema, Types, Model } from 'mongoose'
 import MongooseDelete from 'mongoose-delete'
-import { generateSlug } from '@src/lib/utils'
+import { strToSlug } from '@src/lib/utils'
 
 /**
  * @description The post document interface
@@ -17,7 +17,7 @@ import { generateSlug } from '@src/lib/utils'
  * @property {string[]} categories
  * @property {Function} generateSlug
  */
- interface PostDocument extends Document {
+interface PostDocument extends Document {
     _id: Types.ObjectId,
     title: string,
     slug?: string,
@@ -86,20 +86,29 @@ const PostSchema: Schema<PostDocument> = new Schema<PostDocument, Model<PostDocu
 PostSchema.plugin(MongooseDelete)
 
 /**
+ * @description Register generate slug method
+ * @method generateSlug
+ * @returns {string} The generated slug
+ */
+ PostSchema.methods.generateSlug = async function(title: string, count: number = 0): Promise<string> {
+    let slug = strToSlug(title + (count > 0 ? `-${count}` : ''))
+
+    const sameSlugCount = await Post.count({ slug })
+    if(sameSlugCount) {
+        return this.generateSlug(title, count + 1)
+    }
+
+    return slug
+}
+
+/**
  * @description Generate slug before save
  * @function generateSlug
  * @returns {void}
  * @see https://mongoosejs.com/docs/middleware.html
  */
 PostSchema.pre('save', async function (this: PostDocument, next) {
-    if(!this.slug) {
-        let slug = generateSlug(this.title)
-
-        const sameSlugCount = await Post.count({ slug })
-        if(sameSlugCount) slug = `${slug}-${sameSlugCount}`
-
-        this.slug = slug
-    }
+    this.slug = await this.generateSlug(this.title)
     next()
 })
 

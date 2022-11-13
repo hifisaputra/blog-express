@@ -32,7 +32,7 @@ export const fetch = async (req: Request, res: Response): Promise<void> => {
  */
 export const create = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { status, title, excerpt, content, featuredImage } = req.body
+        const { status, title, excerpt, content, featuredImage, categories } = req.body
 
         // check if input is valid
         if (!title) {
@@ -47,7 +47,8 @@ export const create = async (req: Request, res: Response): Promise<void> => {
             title,
             excerpt,
             content,
-            featuredImage
+            featuredImage,
+            categories
         })
         await post.save()
 
