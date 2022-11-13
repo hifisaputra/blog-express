@@ -13,6 +13,8 @@ import { generateSlug } from '@src/lib/utils'
  * @property {string} excerpt
  * @property {string} featuredImage
  * @property {string} status
+ * @property {string} author
+ * @property {string[]} categories
  * @property {Function} generateSlug
  */
  interface PostDocument extends Document {
@@ -23,6 +25,8 @@ import { generateSlug } from '@src/lib/utils'
     excerpt?: string,
     featuredImage?: string,
     status?: string,
+    author?: Types.ObjectId,
+    categories?: Types.ObjectId[],
     generateSlug: Function
 }
 
@@ -64,7 +68,15 @@ const PostSchema: Schema<PostDocument> = new Schema<PostDocument, Model<PostDocu
     status: {
         type: String,
         default: 'draft'
-    }
+    },
+    author: {
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    categories: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Category'
+    }]
 }, { timestamps: true })
 
 /**
