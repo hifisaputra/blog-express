@@ -84,7 +84,7 @@ PostSchema.pre('save', async function(next) {
     if(!this.slug) {
         let slug = this.generateSlug(this.title)
 
-        const sameSlugCount = Post.count({ slug })
+        const sameSlugCount = await Post.count({ slug })
         if(sameSlugCount) slug = `${slug}-${sameSlugCount}`
 
         this.slug = slug
@@ -98,6 +98,6 @@ PostSchema.pre('save', async function(next) {
  * @extends Model
  * @see https://mongoosejs.com/docs/models.html
  */
-const Post: Model<PostDocument> = mongoose.models.User || mongoose.model<PostDocument, PostModel>('Post', PostSchema)
+const Post: Model<PostDocument> = mongoose.models.Post || mongoose.model<PostDocument, PostModel>('Post', PostSchema)
 
 export default Post

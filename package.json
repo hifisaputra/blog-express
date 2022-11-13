@@ -1,7 +1,7 @@
 {
-  "name": "eris-server",
+  "name": "blog-express",
   "version": "1.0.0",
-  "description": "Eris ecommerce server",
+  "description": "Blog backend API created with expressjs",
   "main": "dist .",
   "type": "commonjs",
   "scripts": {
@@ -16,14 +16,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@gitlab.com/hifisaputra1/eris-server.git"
+    "url": "git+ssh://git@github.com:hifisaputra/blog-express.git"
   },
   "author": "Hifi Saputra",
   "license": "ISC",
   "bugs": {
-    "url": "https://gitlab.com/hifisaputra1/eris-server/issues"
+    "url": "https://github.com/hifisaputra/blog-express/issues"
   },
-  "homepage": "https://gitlab.com/hifisaputra1/eris-server#readme",
+  "homepage": "https://github.com/hifisaputra/blog-express#readme",
   "_moduleAliases": {
     "@src": "dist"
   },

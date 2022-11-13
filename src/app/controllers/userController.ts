@@ -140,7 +140,7 @@ export const remove = async (req: Request, res: Response): Promise<void> => {
             res.status(404).json({
                 message: 'User not found'
             })
-            return  
+            return
         }
 
         res.json({
