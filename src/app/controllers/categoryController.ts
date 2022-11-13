@@ -57,6 +57,34 @@ export const create = async (req: Request, res: Response): Promise<void> => {
 }
 
 /**
+ * @description Get category by id
+ * @param {Request} req
+ * @param {Response} res
+ * @returns {Promise<void>}
+ * @see https://mongoosejs.com/docs/api.html#model_Model.findById
+ */
+export const get = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params
+        const category = await Category.findById(id)
+        if (!category) {
+            res.status(404).json({
+                message: 'Category not found'
+            })
+            return
+        }
+        res.json({
+            data: category,
+            message: 'Category fetched successfully'
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        })
+    }
+}
+
+/**
  * @description Update category
  * @param {Request} req
  * @param {Response} res
@@ -98,8 +126,9 @@ export const update = async (req: Request, res: Response): Promise<void> => {
 export const remove = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params
-        await Category.findByIdAndDelete(id)
+        const category = await Category.findByIdAndDelete(id)
         res.json({
+            data: category,
             message: 'Category deleted successfully'
         })
     } catch (error) {
