@@ -1,150 +1,215 @@
-import { request, getDefaultToken } from './setup'
-
-const categoryData = {
-    name: 'Category name',
-}
-
-let createdCategoryData = {
-    _id: '',
-    name: '',
-    slug: '',
-}
+import { request, getUserToken, getAdminToken, getCategoryData } from './setup'
 
 /**
- * @descriptionTest Fetching list of category
+ * @descriptionTest Get list of categories
  * @endpoint GET /api/categories
+ * @access Public
+ * @returns { success, message, data }
  */
 describe('GET /categories', () => {
-    it('Trying to get list of category without authorization token should return status 401', async () => {
-        const response = await request().post('/api/categories')
-
-        expect(response.statusCode).toBe(401)
-    })
-
-    it('Successfully getting list of categories should return status 200 and list of categories', async () => {
-        const response = await request().get('/api/categories').set('Authorization', getDefaultToken())
+    it('Accessing categories without token should return status code 200', async () => {
+        const response = await request().get('/api/categories')
+            .send()
 
         expect(response.statusCode).toBe(200)
+        expect(response.body).toHaveProperty('success', true)
+        expect(response.body).toHaveProperty('data')
+    })
+
+    it('Accessing categories with user token should return status code c', async () => {
+        const response = await request().get('/api/categories')
+            .set('Authorization', getUserToken())
+            .send()
+
+        expect(response.statusCode).toBe(200)
+        expect(response.body).toHaveProperty('success', true)
+        expect(response.body).toHaveProperty('data')
+    })
+
+    it('Accessing categories with admin token should return status code 200 and categories', async () => {
+        const response = await request().get('/api/categories')
+            .set('Authorization', getAdminToken())
+            .send()
+
+        expect(response.statusCode).toBe(200)
+        expect(response.body).toHaveProperty('success', true)
         expect(response.body).toHaveProperty('data')
     })
 })
 
 /**
- * @descriptionTest Creating a new category
+ * @descriptionTest Create new category
  * @endpoint POST /api/categories
+ * @access Admin
+ * @body { name, description }
+ * @returns { success, message, data }
  */
 describe('POST /categories', () => {
-    it('Trying to create category without authorization token should return status 401', async () => {
+    it('Creating category without token should return status code 403', async () => {
         const response = await request().post('/api/categories')
+            .send({ name: 'Category 1', description: 'Category 1 description' })
 
-        expect(response.statusCode).toBe(401)
+        expect(response.statusCode).toBe(403)
+        expect(response.body).toHaveProperty('success', false)
     })
 
-    it('Trying to create category with invalid form data should return stataus 400', async () => {
-        const response = await request().post('/api/categories').set('Authorization', getDefaultToken()).send({})
+    it('Creating category with user token should return status code 403', async () => {
+        const response = await request().post('/api/categories')
+            .set('Authorization', getUserToken())
+            .send({ name: 'Category 1', description: 'Category 1 description' })
 
-        expect(response.statusCode).toBe(400)
+        expect(response.statusCode).toBe(403)
+        expect(response.body).toHaveProperty('success', false)
     })
 
-    it('Trying to create category with valid form data should return status 201 and category', async () => {
-        const response = await request().post('/api/categories').set('Authorization', getDefaultToken()).send(categoryData)
+    it('Creating category with admin token should return status code 201 and category', async () => {
+        const response = await request().post('/api/categories')
+            .set('Authorization', getAdminToken())
+            .send({ name: 'Category 1', description: 'Category 1 description' })
 
         expect(response.statusCode).toBe(201)
+        expect(response.body).toHaveProperty('success', true)
         expect(response.body).toHaveProperty('data')
-        expect(response.body.data).toHaveProperty('name', categoryData.name)
-        createdCategoryData = response.body.data
-        expect(createdCategoryData).toHaveProperty('_id')
-        expect(createdCategoryData).toHaveProperty('name', categoryData.name)
-        expect(createdCategoryData).toHaveProperty('slug')
     })
 })
 
 /**
- * @descriptionTest Fetching a single category
+ * @descriptionTest Get single category
  * @endpoint GET /api/categories/:id
+ * @access Public
+ * @returns { success, message, data }
  */
 describe('GET /categories/:id', () => {
-    it('Trying to get a single category without authorization token should return status 401', async () => {
-        const response = await request().get(`/api/categories/${createdCategoryData._id}`)
+    const { _id, name, description } = getCategoryData()
 
-        expect(response.statusCode).toBe(401)
-    })
-
-    it('Trying to get a single category with non-existing id should return status 404', async () => {
-        const response = await request().get('/api/categories/non-id').set('Authorization', getDefaultToken())
-
-        expect(response.statusCode).toBe(404)
-    })
-
-    it('Successfully getting a single category should return status 200 and category', async () => {
-        const response = await request().get(`/api/categories/${createdCategoryData._id}`).set('Authorization', getDefaultToken())
+    it('Accessing category without token should return status code 200', async () => {
+        const response = await request().get(`/api/categories/${_id}`)
+            .send()
 
         expect(response.statusCode).toBe(200)
+        expect(response.body).toHaveProperty('success', true)
         expect(response.body).toHaveProperty('data')
-        expect(response.body.data).toHaveProperty('_id', createdCategoryData._id)
-        expect(response.body.data).toHaveProperty('name', createdCategoryData.name)
-        expect(response.body.data).toHaveProperty('slug', createdCategoryData.slug)
+        expect(response.body.data).toHaveProperty('_id', _id)
+        expect(response.body.data).toHaveProperty('name', name)
+        expect(response.body.data).toHaveProperty('description', description)
+    })
+
+    it('Accessing category with user token should return status code 200', async () => {
+        const response = await request().get(`/api/categories/${_id}`)
+            .set('Authorization', getUserToken())
+            .send()
+
+        expect(response.statusCode).toBe(200)
+        expect(response.body).toHaveProperty('success', true)
+        expect(response.body).toHaveProperty('data')
+        expect(response.body.data).toHaveProperty('_id', _id)
+        expect(response.body.data).toHaveProperty('name', name)
+        expect(response.body.data).toHaveProperty('description', description)
+    })
+
+    it('Accessing category with admin token should return status code 200 and category', async () => {
+        const response = await request().get(`/api/categories/${_id}`)
+            .set('Authorization', getAdminToken())
+            .send()
+
+        expect(response.statusCode).toBe(200)
+        expect(response.body).toHaveProperty('success', true)
+        expect(response.body).toHaveProperty('data')
+        expect(response.body.data).toHaveProperty('_id', _id)
+        expect(response.body.data).toHaveProperty('name', name)
+        expect(response.body.data).toHaveProperty('description', description)
     })
 })
 
 /**
- * @descriptionTest Updating a category
+ * @descriptionTest Update category
  * @endpoint PUT /api/categories/:id
+ * @access Admin
+ * @body { name, description }
+ * @returns { success, message, data }
  */
 describe('PUT /categories/:id', () => {
-    it('Trying to update category without authorization token should return status 401', async () => {
-        const response = await request().put(`/api/categories/${createdCategoryData._id}`)
+    it('Updating category without token should return status code 403', async () => {
+        const response = await request().put('/api/categories/5f7e1b9b9b9b9b9b9b9b9b34')
+            .send({ name: 'Category 1', description: 'Category 1 description' })
 
-        expect(response.statusCode).toBe(401)
+        expect(response.statusCode).toBe(403)
+        expect(response.body).toHaveProperty('success', false)
     })
 
-    it('Trying to update category with non-existing id should return status 404', async () => {
-        const response = await request().put('/api/categories/non-id').set('Authorization', getDefaultToken()).send({})
+    it('Updating category with user token should return status code 403', async () => {
+        const response = await request().put('/api/categories/5f7e1b9b9b9b9b9b9b9b9b34')
+            .set('Authorization', getUserToken())
+            .send({ name: 'Category 1', description: 'Category 1 description' })
+
+        expect(response.statusCode).toBe(403)
+        expect(response.body).toHaveProperty('success', false)
+    })
+
+    it('Updating category with nonexistent id should return status code 404', async () => {
+        const response = await request().put('/api/categories/5f7e1b9b9b9b9b9b9b9b9b34')
+            .set('Authorization', getAdminToken())
+            .send({ name: 'Category 1', description: 'Category 1 description' })
 
         expect(response.statusCode).toBe(404)
+        expect(response.body).toHaveProperty('success', false)
     })
 
-    it('Trying to update category with invalid form data should return status 400', async () => {
-        const response = await request().put(`/api/categories/${createdCategoryData._id}`).set('Authorization', getDefaultToken()).send({})
-
-        expect(response.statusCode).toBe(400)
-    })
-
-    it('Successfully updating category should return status 200 and category', async () => {
-        const response = await request().put(`/api/categories/${createdCategoryData._id}`).set('Authorization', getDefaultToken()).send(categoryData)
+    it('Updating category with admin token should return status code 200 and category', async () => {
+        const { _id } = getCategoryData()
+        const response = await request().put(`/api/categories/${_id}`)
+            .set('Authorization', getAdminToken())
+            .send({ name: 'Category 1', description: 'Category 1 description' })
 
         expect(response.statusCode).toBe(200)
+        expect(response.body).toHaveProperty('success', true)
         expect(response.body).toHaveProperty('data')
-        expect(response.body.data).toHaveProperty('_id', createdCategoryData._id)
-        expect(response.body.data).toHaveProperty('name', categoryData.name)
-        expect(response.body.data).toHaveProperty('slug', createdCategoryData.slug)
+        expect(response.body.data).toHaveProperty('_id', _id)
+        expect(response.body.data).toHaveProperty('name', 'Category 1')
+        expect(response.body.data).toHaveProperty('description', 'Category 1 description')
     })
 })
 
 /**
- * @descriptionTest Deleting a category
+ * @descriptionTest Delete category
  * @endpoint DELETE /api/categories/:id
+ * @access Admin
+ * @returns { success, message }
  */
 describe('DELETE /categories/:id', () => {
-    it('Trying to delete category without authorization token should return status 401', async () => {
-        const response = await request().delete(`/api/categories/${createdCategoryData._id}`)
+    it('Deleting category without token should return status code 403', async () => {
+        const response = await request().delete('/api/categories/5f7e1b9b9b9b9b9b9b9b9b34')
+            .send()
 
-        expect(response.statusCode).toBe(401)
+        expect(response.statusCode).toBe(403)
+        expect(response.body).toHaveProperty('success', false)
     })
 
-    it('Trying to delete category with non-existing id should return status 404', async () => {
-        const response = await request().delete('/api/categories/non-id').set('Authorization', getDefaultToken())
+    it('Deleting category with user token should return status code 403', async () => {
+        const response = await request().delete('/api/categories/5f7e1b9b9b9b9b9b9b9b9b34')
+            .set('Authorization', getUserToken())
+            .send()
+
+        expect(response.statusCode).toBe(403)
+        expect(response.body).toHaveProperty('success', false)
+    })
+
+    it('Deleting category with nonexistent id should return status code 404', async () => {
+        const response = await request().delete('/api/categories/5f7e1b9b9b9b9b9b9b9b9b34')
+            .set('Authorization', getAdminToken())
+            .send()
 
         expect(response.statusCode).toBe(404)
+        expect(response.body).toHaveProperty('success', false)
     })
 
-    it('Successfully deleting category should return status 200 and category', async () => {
-        const response = await request().delete(`/api/categories/${createdCategoryData._id}`).set('Authorization', getDefaultToken())
+    it('Deleting category with admin token should return status code 200 and category', async () => {
+        const { _id } = getCategoryData()
+        const response = await request().delete(`/api/categories/${_id}`)
+            .set('Authorization', getAdminToken())
+            .send()
 
         expect(response.statusCode).toBe(200)
-        expect(response.body).toHaveProperty('data')
-        expect(response.body.data).toHaveProperty('_id', createdCategoryData._id)
-        expect(response.body.data).toHaveProperty('name', categoryData.name)
-        expect(response.body.data).toHaveProperty('slug', createdCategoryData.slug)
+        expect(response.body).toHaveProperty('success', true)
     })
 })
