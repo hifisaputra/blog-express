@@ -1,5 +1,5 @@
 import mongoose from '@src/lib/mongoose'
-import { Document, Schema, Types, Model } from 'mongoose'
+import { Schema, Types, Model } from 'mongoose'
 import MongooseDelete from 'mongoose-delete'
 import { strToSlug } from '@src/lib/utils'
 

@@ -14,7 +14,7 @@ import config from '@src/config'
  * @property {string} profilePicture The user profile picture url
  * @property {string} role The user role, default is 'user'
  */
-interface UserDocument {
+export interface UserDocument {
     _id: Types.ObjectId,
     name: string,
     email: string,
