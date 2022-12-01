@@ -11,8 +11,6 @@ beforeAll(async () => {
     await deleteAllUsers()
 
     userToken = await createUserToken()
-
-    console.log(userToken)
 })
 
 afterAll(async () => {

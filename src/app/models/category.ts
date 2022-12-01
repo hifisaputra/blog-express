@@ -28,7 +28,7 @@ interface CategoryMethod {
  * @description The category model interface for register custom static methods
  * @interface CategoryModel
  */
-interface CategoryModel extends Model<CategoryDocument, {}, CategoryMethod> {}
+type CategoryModel = Model<CategoryDocument, Record<string, unknown>, CategoryMethod>
 
 /**
  * @description Category database schema
@@ -67,7 +67,7 @@ CategorySchema.plugin(MongooseDelete)
  */
 CategorySchema.method('generateSlug', async function() {
     let slug = strToSlug(this.name)
-    let count = await this.model('Category').countDocuments({ slug })
+    const count = await this.model('Category').countDocuments({ slug })
     if (count > 0) {
         slug = `${slug}-${count}`
     }

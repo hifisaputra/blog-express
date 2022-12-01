@@ -36,8 +36,9 @@ interface UserMethod {
  * @description The user model interface for register custom static methods
  * @interface UserModel
  */
-interface UserModel extends Model<UserDocument, {}, UserMethod> {
+interface UserModel extends Model<UserDocument, Record<string, unknown>, UserMethod> {
     findByEmail(email: string): Promise<UserDocument | null>,
+    emailExists(email: string): Promise<boolean>,
     verifyToken(token: string): Promise<UserDocument | null>
 }
 
@@ -92,6 +93,35 @@ UserSchema.method('validatePassword', async function (password: string): Promise
  */
 UserSchema.method('generateToken', async function (): Promise<string> {
     return jwt.sign({ id: this._id }, config.app.secret)
+})
+
+/**
+ * @description Method to find user by email
+ * @param {string} email The user email address
+ * @returns {Promise<UserDocument | null>}
+ */
+UserSchema.static('findByEmail', async function (email: string): Promise<UserDocument | null> {
+    return await this.findOne({ email })
+})
+
+/**
+ * @description Method to check if user email exists
+ * @param {string} email The user email address
+ * @returns {Promise<boolean>}
+ */
+UserSchema.static('emailExists', async function (email: string): Promise<boolean> {
+    return !!await this.exists({ email })
+})
+
+/**
+ * @description Method to verify JWT token
+ * @param {string} token The JWT token
+ * @returns {Promise<boolean>}
+ * @see https://www.npmjs.com/package/jsonwebtoken
+ */
+UserSchema.static('verifyToken', async function (token: string): Promise<UserDocument | null> {
+    const { id } = jwt.verify(token, config.app.secret) as { id: string }
+    return await this.findById(id)
 })
 
 /**

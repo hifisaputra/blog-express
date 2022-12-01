@@ -94,6 +94,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         await user.save()
         const token: string = await user.generateToken()
 
+        await User.verifyToken(token)
+
         res.status(201).json({
             success: true,
             message: 'User created',

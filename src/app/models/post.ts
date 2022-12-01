@@ -40,7 +40,7 @@ interface PostMethod {
  * @interface PostModel
  * @extends Model<PostDocument>
  */
-interface PostModel extends Model<PostDocument, {}, PostMethod> {}
+type PostModel = Model<PostDocument, Record<string, unknown>, PostMethod>
 
 /**
  * @description Post database schema
@@ -101,7 +101,7 @@ PostSchema.plugin(MongooseDelete)
  */
 PostSchema.method('generateSlug', async function() {
     let slug = strToSlug(this.title)
-    let count = await this.model('Post').countDocuments({ slug })
+    const count = await this.model('Post').countDocuments({ slug })
     if (count > 0) {
         slug = `${slug}-${count}`
     }
