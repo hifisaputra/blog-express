@@ -13,6 +13,7 @@ import { strToSlug } from '@src/lib/utils'
 interface CategoryDocument {
     _id: Types.ObjectId,
     name: string,
+    description?: string,
     slug?: string,
 }
 
@@ -45,6 +46,10 @@ const CategorySchema: Schema<CategoryDocument, CategoryModel, CategoryMethod> = 
     slug: {
         type: String,
         unique: true
+    },
+    description: {
+        type: String,
+        required: true
     }
 }, { timestamps: true })
 

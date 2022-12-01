@@ -1,8 +1,10 @@
 import { Request, Response } from 'express'
 import Category from '@src/app/models/category'
+import { logger } from '@src/lib/winston'
 
 /**
- * @description Show list of all categories
+ * @description Method to get all categories
+ *
  * @param {Request} req
  * @param {Response} res
  * @returns {Promise<void>}
@@ -12,18 +14,22 @@ export const fetch = async (req: Request, res: Response): Promise<void> => {
     try {
         const categories = await Category.find({})
         res.json({
+            success: true,
+            message: 'Categories fetched successfully',
             data: categories,
-            message: 'Categories fetched successfully'
         })
     } catch (error) {
+        logger.log('error', error.message)
         res.status(500).json({
+            success: false,
             message: error.message
         })
     }
 }
 
 /**
- * @description Create new category
+ * @description Method to validate input and store a new category in the database
+ *
  * @param {Request} req
  * @param {Response} res
  * @returns {Promise<void>}
@@ -31,33 +37,40 @@ export const fetch = async (req: Request, res: Response): Promise<void> => {
  */
 export const create = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { name } = req.body
+        const { name, description } = req.body
 
         // check if input is valid
         if (!name) {
             res.status(400).json({
+                success: false,
                 message: 'Please provide name'
             })
             return
         }
 
         const category = new Category({
-            name
+            name,
+            description
         })
         await category.save()
         res.status(201).json({
+            success: true,
+            message: 'Category created successfully',
             data: category,
-            message: 'Category created successfully'
         })
     } catch (error) {
+        logger.log('error', error.message)
         res.status(500).json({
+            success: false,
             message: error.message
         })
     }
 }
 
 /**
- * @description Get category by id
+ * @description Method to get a category by id
+ * if category is not found, it will return 404
+ *
  * @param {Request} req
  * @param {Response} res
  * @returns {Promise<void>}
@@ -69,23 +82,29 @@ export const get = async (req: Request, res: Response): Promise<void> => {
         const category = await Category.findById(id)
         if (!category) {
             res.status(404).json({
+                success: false,
                 message: 'Category not found'
             })
             return
         }
         res.json({
+            success: true,
+            message: 'Category fetched successfully',
             data: category,
-            message: 'Category fetched successfully'
         })
     } catch (error) {
+        logger.log('error', error.message)
         res.status(500).json({
+            success: false,
             message: error.message
         })
     }
 }
 
 /**
- * @description Update category
+ * @description Method to validate input and store changes to a category in the database
+ * if category is not found, it will return 404
+ *
  * @param {Request} req
  * @param {Response} res
  * @returns {Promise<void>}
@@ -93,31 +112,46 @@ export const get = async (req: Request, res: Response): Promise<void> => {
  */
 export const update = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { name } = req.body
+        const { name, description } = req.body
         const { id } = req.params
 
         // check if input is valid
         if (!name) {
             res.status(400).json({
+                success: false,
                 message: 'Please provide name'
             })
             return
         }
 
-        const category = await Category.findByIdAndUpdate(id, { name }, { new: true })
+        const category = await Category.findByIdAndUpdate(id, { name, description }, { new: true })
+
+        if (!category) {
+            res.status(404).json({
+                success: false,
+                message: 'Category not found'
+            })
+            return
+        }
+
         res.json({
+            success: true,
+            message: 'Category updated successfully',
             data: category,
-            message: 'Category updated successfully'
         })
     } catch (error) {
+        logger.log('error', error.message)
         res.status(500).json({
+            success: false,
             message: error.message
         })
     }
 }
 
 /**
- * @description Delete category
+ * @description Method to delete a category by id from the database
+ * if category is not found, it will return 404
+ *
  * @param {Request} req
  * @param {Response} res
  * @returns {Promise<void>}
@@ -127,12 +161,24 @@ export const remove = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params
         const category = await Category.findByIdAndDelete(id)
+
+        if (!category) {
+            res.status(404).json({
+                success: false,
+                message: 'Category not found'
+            })
+            return
+        }
+
         res.json({
+            success: true,
+            message: 'Category deleted successfully',
             data: category,
-            message: 'Category deleted successfully'
         })
     } catch (error) {
+        logger.log('error', error.message)
         res.status(500).json({
+            success: false,
             message: error.message
         })
     }
