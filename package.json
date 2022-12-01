@@ -52,7 +52,7 @@
     "express": "^4.17.2",
     "jsonwebtoken": "^8.5.1",
     "module-alias": "^2.2.2",
-    "mongoose": "^6.2.0",
+    "mongoose": "^6.7.5",
     "mongoose-delete": "^0.5.4",
     "winston": "^3.5.1"
   }
