@@ -1,8 +1,11 @@
 import { Request, Response } from 'express'
 import Post from '@src/app/models/post'
+import { logger } from '@src/lib/winston'
+import { AuthRequest } from '@src/app/middlewares/auth'
 
 /**
  * @description Show list of all available post
+ *
  * @param {Request} req
  * @param {Response} res
  * @returns {Promise<void>}
@@ -13,58 +16,69 @@ export const fetch = async (req: Request, res: Response): Promise<void> => {
         const posts = await Post.find({})
 
         res.json({
+            success: true,
+            message: 'Posts fetched successfully',
             data: posts,
-            message: 'Posts fetched successfully'
         })
     } catch (error) {
+        logger.log('error', error.message)
         res.status(500).json({
+            success: false,
             message: error.message
         })
     }
 }
 
 /**
- * @description Store new post to database
- * @param {Request} req
+ * @description Validate input and store a new post in the database
+ *
+ * @param {AuthRequest} req
  * @param {Response} res
  * @returns {Promise<void>}
  * @see https://mongoosejs.com/docs/api.html#model_Model.create
  */
-export const create = async (req: Request, res: Response): Promise<void> => {
+export const create = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const { status, title, excerpt, content, featuredImage, categories } = req.body
+        const { title, excerpt, content, featuredImage, categories, status } = req.body
 
         // check if input is valid
         if (!title) {
             res.status(400).json({
+                success: false,
                 message: 'Please provide title for the post'
             })
             return
         }
 
         const post = new Post({
-            status,
             title,
             excerpt,
             content,
             featuredImage,
-            categories
+            status,
+            author: req.user._id,
+            categories,
         })
         await post.save()
 
         res.status(201).json({
+            success: true,
+            message: 'Post created successfully',
             data: post,
-            message: 'Post created successfully'
         })
     } catch (error) {
+        logger.log('error', error.message)
         res.status(500).json({
+            success: false,
             message: error.message
         })
     }
 }
 
 /**
- * @description Get single post by id
+ * @description Get a single post by id
+ * if post is not found, return 404
+ *
  * @param {Request} req
  * @param {Response} res
  * @returns {Promise<void>}
@@ -78,24 +92,30 @@ export const get = async (req: Request, res: Response): Promise<void> => {
 
         if (!post) {
             res.status(404).json({
+                success: false,
                 message: 'Post not found'
             })
             return
         }
 
         res.json({
+            success: true,
+            message: 'Post fetched successfully',
             data: post,
-            message: 'Post fetched successfully'
         })
     } catch (error) {
+        logger.log('error', error.message)
         res.status(500).json({
+            success: false,
             message: error.message
         })
     }
 }
 
 /**
- * @description Update post by id
+ * @description Method to validate input and update a post in the database
+ * if post is not found, return 404
+ *
  * @param {Request} req
  * @param {Response} res
  * @returns {Promise<void>}
@@ -104,11 +124,12 @@ export const get = async (req: Request, res: Response): Promise<void> => {
 export const update = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params
-        const { status, title, excerpt, content, featuredImage } = req.body
+        const { status, title, excerpt, content, featuredImage, categories } = req.body
 
         // check if input is valid
         if (!title) {
             res.status(400).json({
+                success: false,
                 message: 'Please provide title for the post'
             })
             return
@@ -121,31 +142,38 @@ export const update = async (req: Request, res: Response): Promise<void> => {
                 title,
                 excerpt,
                 content,
-                featuredImage
+                featuredImage,
+                categories,
             },
             { new: true }
         )
 
         if (!post) {
             res.status(404).json({
+                success: false,
                 message: 'Post not found'
             })
             return
         }
 
         res.json({
+            success: true,
+            message: 'Post updated successfully',
             data: post,
-            message: 'Post updated successfully'
         })
     } catch (error) {
+        logger.log('error', error.message)
         res.status(500).json({
+            success: false,
             message: error.message
         })
     }
 }
 
 /**
- * @description Delete post by id
+ * @description Method to delete a post from the database
+ * if post is not found, return 404
+ *
  * @param {Request} req
  * @param {Response} res
  * @returns {Promise<void>}
@@ -159,17 +187,20 @@ export const remove = async (req: Request, res: Response): Promise<void> => {
 
         if (!post) {
             res.status(404).json({
+                success: false,
                 message: 'Post not found'
             })
             return
         }
 
         res.json({
-            data: post,
+            success: true,
             message: 'Post deleted successfully'
         })
     } catch (error) {
+        logger.log('error', error.message)
         res.status(500).json({
+            success: false,
             message: error.message
         })
     }

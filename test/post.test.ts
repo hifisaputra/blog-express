@@ -1,167 +1,188 @@
-import { request, getDefaultToken } from './setup'
-import Category from '../src/app/models/category'
-
-const postData = {
-    status: 'published',
-    title: 'What is Lorem Ipsum?',
-    content: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.',
-    excerpt: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.',
-    featuredImage: 'https://picsum.photos/200/300',
-}
-
-let createdPostData = {
-    _id: '',
-    status: '',
-    title: '',
-    slug: '',
-    content: '',
-    excerpt: '',
-    featuredImage: '',
-    author: '',
-    categories: [] as string[],
-}
+import { request, getUserToken, getAdminToken, getCategoryData, getAdminData, getPostData } from './setup'
 
 /**
- * @descriptionTest Fetching list of post
+ * @descriptionTest Get list of posts
  * @endpoint GET /api/posts
+ * @access Public
+ * @returns { success, message, data }
  */
 describe('GET /posts', () => {
-    it('Trying to get list of post without authorization token should return status 401', async () => {
-        const response = await request().post('/api/posts')
-
-        expect(response.statusCode).toBe(401)
-    })
-
-    it('Successfully getting list of posts should return status 200 and list of posts', async () => {
-        const response = await request().get('/api/posts').set('Authorization', getDefaultToken())
+    it('Accessing posts without token should return status code 200', async () => {
+        const response = await request().get('/api/posts')
+            .send()
 
         expect(response.statusCode).toBe(200)
+        expect(response.body).toHaveProperty('success', true)
+        expect(response.body).toHaveProperty('data')
+    })
+
+    it('Accessing posts with user token should return status code 200', async () => {
+        const response = await request().get('/api/posts')
+            .set('Authorization', getUserToken())
+            .send()
+
+        expect(response.statusCode).toBe(200)
+        expect(response.body).toHaveProperty('success', true)
+        expect(response.body).toHaveProperty('data')
+    })
+
+    it('Accessing posts with admin token should return status code 200 and posts', async () => {
+        const response = await request().get('/api/posts')
+            .set('Authorization', getAdminToken())
+            .send()
+
+        expect(response.statusCode).toBe(200)
+        expect(response.body).toHaveProperty('success', true)
         expect(response.body).toHaveProperty('data')
     })
 })
 
-
 /**
- * @descriptionTest Creating a new post
+ * @descriptionTest Create post
  * @endpoint POST /api/posts
+ * @access Admin
+ * @body { title, content, excerpt, featuredImage, categories[], status }
+ * @returns { success, message, data }
  */
- describe('POST /posts', () => {
-    it('Trying to create post without authorization token should return status 401', async () => {
+describe('POST /posts', () => {
+    it('Creating post without token should return status code 403', async () => {
         const response = await request().post('/api/posts')
+            .send(getPostData())
 
-        expect(response.statusCode).toBe(401)
+        expect(response.statusCode).toBe(403)
+        expect(response.body).toHaveProperty('success', false)
     })
 
-    it('Trying to create post with invalid form data should return stataus 400', async () => {
-        const response = await request().post('/api/posts').set('Authorization', getDefaultToken()).send({})
+    it('Creating post with user token should return status code 403', async () => {
+        const response = await request().post('/api/posts')
+            .set('Authorization', getUserToken())
+            .send(getPostData())
 
-        expect(response.statusCode).toBe(400)
+        expect(response.statusCode).toBe(403)
+        expect(response.body).toHaveProperty('success', false)
     })
 
-    it('Trying to create post with valid form data should return status 201 and post', async () => {
-        const categories = await Category.find()
+    it('Creating post with admin token should return status code 201 and post', async () => {
+        const categoryData = getCategoryData()
+        const userData = getAdminData()
 
-        const response = await request().post('/api/posts').set('Authorization', getDefaultToken()).send({
-            ...postData,
-            categories: categories.map((category) => category._id),
-        })
+        const response = await request().post('/api/posts')
+            .set('Authorization', getAdminToken())
+            .send({
+                title: 'Post 1',
+                content: 'Post 1 content',
+                excerpt: 'Post 1 excerpt',
+                featuredImage: 'Post 1 featured image',
+                categories: [categoryData._id],
+                status: 'published'
+            })
 
         expect(response.statusCode).toBe(201)
+        expect(response.body).toHaveProperty('success', true)
         expect(response.body).toHaveProperty('data')
-        expect(response.body.data).toHaveProperty('title', postData.title)
-        createdPostData = response.body.data
-        expect(createdPostData).toHaveProperty('_id')
-        expect(createdPostData).toHaveProperty('title', postData.title)
-        expect(createdPostData).toHaveProperty('slug')
-        expect(createdPostData).toHaveProperty('content', postData.content)
-        expect(createdPostData).toHaveProperty('excerpt', postData.excerpt)
-        expect(createdPostData).toHaveProperty('featuredImage', postData.featuredImage)
-        expect(createdPostData).toHaveProperty('categories')
-        expect.arrayContaining(createdPostData.categories)
-        expect(createdPostData.categories.length).toBeGreaterThan(0)
+        expect(response.body.data).toHaveProperty('title', 'Post 1')
+        expect(response.body.data).toHaveProperty('content', 'Post 1 content')
+        expect(response.body.data).toHaveProperty('excerpt', 'Post 1 excerpt')
+        expect(response.body.data).toHaveProperty('featuredImage', 'Post 1 featured image')
+        expect(response.body.data).toHaveProperty('categories')
+        expect(response.body.data).toHaveProperty('status', 'published')
+        expect(response.body.data).toHaveProperty('author', userData._id)
     })
 })
 
-
 /**
- * @descriptionTest Get the specified post
+ * @descriptionTest Get post by id
  * @endpoint GET /api/posts/:id
+ * @access Public
+ * @returns { success, message, data }
  */
- describe('GET /posts/:id', () => {
-    it('Trying to get post without authorization token should return status 401', async () => {
-        const response = await request().get('/api/posts/1')
+describe('GET /posts/:id', () => {
+    it('Accessing post by id without token should return status code 200', async () => {
+        const postData = getPostData()
 
-        expect(response.statusCode).toBe(401)
-    })
-
-    it('Trying to get non existed post should return 404', async () => {
-        const response = await request().get('/api/posts/1').set('Authorization', getDefaultToken())
-
-        expect(response.statusCode).toBe(404)
-    })
-
-    it('Successfully creating post should return 200 and post', async () => {
-        const { _id, title } = createdPostData
-        const response = await request().get(`/api/posts/${_id}`).set('Authorization', getDefaultToken())
+        const response = await request().get(`/api/posts/${postData._id}`)
+            .send()
 
         expect(response.statusCode).toBe(200)
+        expect(response.body).toHaveProperty('success', true)
         expect(response.body).toHaveProperty('data')
-        expect(response.body.data).toHaveProperty('title', title)
+    })
+
+    it('Accessing post by id with user token should return status code 200', async () => {
+        const postData = getPostData()
+
+        const response = await request().get(`/api/posts/${postData._id}`)
+            .set('Authorization', getUserToken())
+            .send()
+
+        expect(response.statusCode).toBe(200)
+        expect(response.body).toHaveProperty('success', true)
+        expect(response.body).toHaveProperty('data')
+    })
+
+    it('Accessing post by id with admin token should return status code 200 and post', async () => {
+        const postData = getPostData()
+
+        const response = await request().get(`/api/posts/${postData._id}`)
+            .set('Authorization', getAdminToken())
+            .send()
+
+        expect(response.statusCode).toBe(200)
+        expect(response.body).toHaveProperty('success', true)
+        expect(response.body).toHaveProperty('data')
     })
 })
 
 /**
- * @descriptionTest Update the specified post data
+ * @descriptionTest Update post by id
  * @endpoint PUT /api/posts/:id
+ * @access Admin
+ * @body { title, content, excerpt, featuredImage, categories[], status }
+ * @returns { success, message, data }
  */
 describe('PUT /posts/:id', () => {
-    it('Trying to update post without authorization token should return status 401', async () => {
-        const response = await request().put('/api/posts/1')
+    it('Updating post by id without token should return status code 403', async () => {
+        const postData = getPostData()
 
-        expect(response.statusCode).toBe(401)
+        const response = await request().put(`/api/posts/${postData._id}`)
+            .send(getPostData())
+
+        expect(response.statusCode).toBe(403)
+        expect(response.body).toHaveProperty('success', false)
     })
 
-    it('Trying to update post with incorrect post id should return 404', async () => {
-        const response = await request().put('/api/posts/1').set('Authorization', getDefaultToken())
+    it('Updating post by id with user token should return status code 403', async () => {
+        const postData = getPostData()
 
-        expect(response.statusCode).toBe(404)
+        const response = await request().put(`/api/posts/${postData._id}`)
+            .set('Authorization', getUserToken())
+            .send(getPostData())
+
+        expect(response.statusCode).toBe(403)
+        expect(response.body).toHaveProperty('success', false)
     })
 
-    it('Successfully updating post should return 200 and updated post', async () => {
-        const { _id } = createdPostData
-        const response = await request().put(`/api/posts/${_id}`).set('Authorization', getDefaultToken()).send({
-            title: 'Updated title',
-        })
+    it('Updating post by id with admin token should return status code 200 and post', async () => {
+        const postData = getPostData()
+
+        const response = await request().put(`/api/posts/${postData._id}`)
+            .set('Authorization', getAdminToken())
+            .send({
+                title: 'Post 1 updated',
+                content: 'Post 1 content updated',
+                excerpt: 'Post 1 excerpt updated',
+                featuredImage: 'Post 1 featured image updated',
+                status: 'published'
+            })
 
         expect(response.statusCode).toBe(200)
+        expect(response.body).toHaveProperty('success', true)
         expect(response.body).toHaveProperty('data')
-        expect(response.body.data).toHaveProperty('title', 'Updated title')
+        expect(response.body.data).toHaveProperty('title', 'Post 1 updated')
+        expect(response.body.data).toHaveProperty('content', 'Post 1 content updated')
+        expect(response.body.data).toHaveProperty('excerpt', 'Post 1 excerpt updated')
+        expect(response.body.data).toHaveProperty('featuredImage', 'Post 1 featured image updated')
+        expect(response.body.data).toHaveProperty('categories')
+        expect(response.body.data).toHaveProperty('status', 'published')
     })
-})
-
-/**
- * @descriptionTest Delete the specified post
- * @endpoint DELETE /api/posts/:id
- */
-describe('DELETE /posts/:id', () => {
-    it('Trying to delete post without authorization token should return status 401', async () => {
-        const response = await request().delete('/api/posts/1')
-
-        expect(response.statusCode).toBe(401)
-    })
-
-    it('Trying to delete post with incorrect post id should return 404', async () => {
-        const response = await request().delete('/api/posts/1').set('Authorization', getDefaultToken())
-
-        expect(response.statusCode).toBe(404)
-    })
-
-    // it('Successfully deleting post should return 200 and deleted post', async () => {
-    //     const { _id } = createdPostData
-    //     const response = await request().delete(`/api/posts/${_id}`).set('Authorization', getDefaultToken())
-
-    //     expect(response.statusCode).toBe(200)
-    //     expect(response.body).toHaveProperty('data')
-    //     expect(response.body.data).toHaveProperty('_id', _id)
-    // })
 })

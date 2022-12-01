@@ -3,6 +3,7 @@ import server from '../../src/app'
 import supertest from 'supertest'
 import { createUserToken, createAdminToken, userData, adminData, deleteAllUsers } from './auth'
 import { createCategory, deleteAllCategories, categoryData } from './category'
+import { createPost, deleteAllPosts, postData } from './post'
 
 let userToken: string
 let adminToken: string
@@ -11,10 +12,13 @@ beforeAll(async () => {
     await connectDB()
     await deleteAllUsers()
     await deleteAllCategories()
+    await deleteAllPosts()
 
-    await createCategory()
     userToken = await createUserToken()
     adminToken = await createAdminToken()
+
+    await createCategory()
+    await createPost()
 })
 
 afterAll(async () => {
@@ -35,3 +39,4 @@ export const getAdminToken = () => adminToken
 export const getUserData = () => userData
 export const getAdminData = () => adminData
 export const getCategoryData = () => categoryData
+export const getPostData = () => postData
