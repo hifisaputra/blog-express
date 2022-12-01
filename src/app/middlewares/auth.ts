@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import User, { UserDocument } from '@src/app/models/user'
 
 /**
- * @description Auth Request
+ * @description Auth request interface
  * @interface AuthRequest
  * @extends Request
  */

@@ -5,3 +5,4 @@ docs
 
 .env
 error.log
+package-lock.json
