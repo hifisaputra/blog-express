@@ -76,15 +76,15 @@ describe('POST /login', () => {
  * @descriptionTest Get logged in user data
  * @endpoint GET /api/auth/profile
  * @access Private
- * @returns { success, data }
  * @headers { Authorization: token }
+ * @returns { success, data }
  */
 describe('GET /profile', () => {
-    it('Accessing profile endpoint without Authorization header should return status code 401', async () => {
+    it('Accessing profile endpoint without Authorization header should return status code 403', async () => {
         const response = await request().get('/api/auth/profile')
             .send()
 
-        expect(response.statusCode).toBe(401)
+        expect(response.statusCode).toBe(403)
         expect(response.body).toHaveProperty('success', false)
     })
 
