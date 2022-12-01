@@ -1,5 +1,5 @@
 /**
- *  @type {import('ts-jest/dist/types').InitialOptionsTsJest} 
+ *  @type {import('ts-jest/dist/types').InitialOptionsTsJest}
  **/
 module.exports = {
   preset: 'ts-jest',
@@ -8,7 +8,7 @@ module.exports = {
   moduleNameMapper: {
     '^@src/(.*)$': '<rootDir>/src/$1',
   },
-  testTimeout: 10000,
+  testTimeout: 60000,
   setupFiles: ['dotenv/config'],
-  setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/test/setup/index.ts'],
 };
