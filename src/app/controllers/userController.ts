@@ -1,8 +1,10 @@
 import { Request, Response } from 'express'
 import User from '@src/app/models/user'
+import { logger } from '@src/lib/winston'
 
 /**
- * @description Show list of all users
+ * @description Method to get list of users
+ *
  * @param {Request} req
  * @param {Response} res
  * @returns {Promise<void>}
@@ -12,10 +14,12 @@ export const fetch = async (req: Request, res: Response): Promise<void> => {
     try {
         const users = await User.find({})
         res.json({
+            success: true,
+            message: 'Users fetched successfully',
             data: users,
-            message: 'Users fetched successfully'
         })
     } catch (error) {
+        logger.log('error', error.message)
         res.status(500).json({
             message: error.message
         })
@@ -23,7 +27,10 @@ export const fetch = async (req: Request, res: Response): Promise<void> => {
 }
 
 /**
- * @description Create new user
+ * @description Method to validate input and email.
+ * if input is valid and email is not in use,
+ * it will create a new user
+ *
  * @param {Request} req
  * @param {Response} res
  * @returns {Promise<void>}
@@ -31,21 +38,23 @@ export const fetch = async (req: Request, res: Response): Promise<void> => {
  */
 export const create = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { name, email, password } = req.body
+        const { name, email, password, profilePicture, role } = req.body
 
         // check if input is valid
         if (!name || !email || !password) {
             res.status(400).json({
+                success: false,
                 message: 'Please provide name, email and password'
             })
             return
         }
 
-        // check if user already exists
-        const isExist = await User.findOne({ email })
-        if (isExist) {
+        // check if user email is already in use
+        const emailInUse = await User.emailExists(email)
+        if (emailInUse) {
             res.status(400).json({
-                message: 'User already exists'
+                success: false,
+                message: 'Email already in use'
             })
             return
         }
@@ -53,22 +62,29 @@ export const create = async (req: Request, res: Response): Promise<void> => {
         const user = new User({
             name,
             email,
-            password
+            password,
+            profilePicture,
+            role
         })
         await user.save()
         res.status(201).json({
+            success: true,
+            message: 'User created successfully',
             data: user,
-            message: 'User created successfully'
         })
     } catch (error) {
+        logger.log('error', error.message)
         res.status(500).json({
+            success: false,
             message: error.message
         })
     }
 }
 
 /**
- * @description Get user by id
+ * @description Method to get user by id
+ * if user is not found, it will return 404
+ *
  * @param {Request} req
  * @param {Response} res
  * @returns {Promise<void>}
@@ -80,24 +96,31 @@ export const get = async (req: Request, res: Response): Promise<void> => {
 
         if (!user) {
             res.status(404).json({
+                success: false,
                 message: 'User not found'
             })
             return
         }
 
         res.json({
+            success: true,
+            message: 'User fetched successfully',
             data: user,
-            message: 'User fetched successfully'
         })
     } catch (error) {
+        logger.log('error', error.message)
         res.status(500).json({
+            success: false,
             message: error.message
         })
     }
 }
 
 /**
- * @description Update user
+ * @description Method to validate user input,
+ * check if user exists and update user
+ * if user is not found, it will return 404
+ *
  * @param {Request} req
  * @param {Response} res
  * @returns {Promise<void>}
@@ -109,24 +132,30 @@ export const update = async (req: Request, res: Response): Promise<void> => {
 
         if (!user) {
             res.status(404).json({
+                success: false,
                 message: 'User not found'
             })
             return
         }
 
         res.json({
+            success: true,
+            message: 'User updated successfully',
             data: user,
-            message: 'User updated successfully'
         })
     } catch (error) {
+        logger.log('error', error.message)
         res.status(500).json({
+            success: false,
             message: error.message
         })
     }
 }
 
 /**
- * @description Delete user
+ * @description Method to delete user by id
+ * if user is not found, it will return 404
+ *
  * @param {Request} req
  * @param {Response} res
  * @returns {Promise<void>}
@@ -138,17 +167,20 @@ export const remove = async (req: Request, res: Response): Promise<void> => {
 
         if (!user) {
             res.status(404).json({
+                success: false,
                 message: 'User not found'
             })
             return
         }
 
         res.json({
-            data: user,
+            success: true,
             message: 'User deleted successfully'
         })
     } catch (error) {
+        logger.log('error', error.message)
         res.status(500).json({
+            success: false,
             message: error.message
         })
     }

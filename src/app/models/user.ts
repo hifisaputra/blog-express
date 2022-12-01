@@ -67,6 +67,10 @@ const UserSchema: Schema<UserDocument, UserModel, UserMethod> = new Schema<UserD
     profilePicture: {
         type: String,
         default: null
+    },
+    role: {
+        type: String,
+        default: 'user'
     }
 }, { timestamps: true })
 

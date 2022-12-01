@@ -39,7 +39,7 @@ export const userProtected = async (req: AuthRequest, res: Response, next: NextF
     if(req.user) {
         next()
     } else {
-        res.status(401).send({
+        res.status(403).send({
             success: false,
             message: 'Unauthorized'
         })

@@ -1,7 +1,7 @@
 import { connectDB, closeDB } from '../../src/app'
 import server from '../../src/app'
 import supertest from 'supertest'
-import { createUserToken, userData, adminData, deleteAllUsers } from './auth'
+import { createUserToken, createAdminToken, userData, adminData, deleteAllUsers } from './auth'
 
 let userToken: string
 let adminToken: string
@@ -11,6 +11,7 @@ beforeAll(async () => {
     await deleteAllUsers()
 
     userToken = await createUserToken()
+    adminToken = await createAdminToken()
 })
 
 afterAll(async () => {

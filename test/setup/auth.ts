@@ -26,6 +26,16 @@ export const createUserToken = async (): Promise<string> => {
     return user.generateToken()
 }
 
+/**
+ * @description Store admin data to mongodb and return the generated token
+ * @returns {Promise<string>}
+ */
+export const createAdminToken = async (): Promise<string> => {
+    const user = new User(adminData)
+    await user.save()
+    return user.generateToken()
+}
+
 export const deleteAllUsers = async (): Promise<void> => {
     await User.deleteMany({})
 }

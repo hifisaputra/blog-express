@@ -4,8 +4,8 @@ import { adminProtected } from '@src/app/middlewares/auth'
 
 const router = Router()
 
-router.get('/', fetch)
-router.get('/:id([0-9a-f]{24})', get)
+router.get('/', adminProtected, fetch)
+router.get('/:id([0-9a-f]{24})', adminProtected, get)
 router.post('/', adminProtected, create)
 router.put('/:id([0-9a-f]{24})', adminProtected, update)
 router.delete('/:id([0-9a-f]{24})', adminProtected, remove)

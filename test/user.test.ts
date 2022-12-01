@@ -1,149 +1,219 @@
-import { request, getDefaultToken, defaultUser } from './setup'
-
-const userData = {
-    name: 'John Dea',
-    email: 'johndea@mail.com',
-    password: 'password'
-}
-
-let createdUser = {
-    _id: '',
-    name: '',
-    email: '',
-    password: ''
-}
+import { request, getUserToken, getAdminToken, getUserData } from './setup'
 
 /**
- * @descriptionTest GET /api/users
+ * @descriptionTest Get list of users
+ * @endpoint GET /api/users
+ * @access Admin
+ * @returns { success, message, data }
  */
 describe('GET /users', () => {
-    it('Trying to get list of users without authorization token should return status 401', async () => {
+    it('Accessing users without token should return status code 403', async () => {
         const response = await request().get('/api/users')
+            .send()
 
-        expect(response.statusCode).toBe(401)
+        expect(response.statusCode).toBe(403)
+        expect(response.body).toHaveProperty('success', false)
     })
 
-    it('Successfully getting list of users should return status 200 and list of users', async () => {
-        const response = await request().get('/api/users').set('Authorization', getDefaultToken())
+    it('Accessing users with user token should return status code 403', async () => {
+        const response = await request().get('/api/users')
+            .set('Authorization', getUserToken())
+            .send()
+
+        expect(response.statusCode).toBe(403)
+        expect(response.body).toHaveProperty('success', false)
+    })
+
+    it('Accessing users with admin token should return status code 200 and users', async () => {
+        const response = await request().get('/api/users')
+            .set('Authorization', getAdminToken())
+            .send()
 
         expect(response.statusCode).toBe(200)
+        expect(response.body).toHaveProperty('success', true)
         expect(response.body).toHaveProperty('data')
     })
 })
 
 /**
- * @descriptionTest POST /api/users
+ * @descriptionTest Create new user
+ * @endpoint POST /api/users
+ * @access Admin
+ * @body { name, email, password, profilePicture, role }
+ * @returns { success, message, data }
  */
 describe('POST /users', () => {
-    it('Trying to create user without authorization token should return status 401', async () => {
+    it('Creating user without token should return status code 403', async () => {
         const response = await request().post('/api/users')
+            .send({ name: 'John Doe', email: 'johndoe@test.com', password: 'password', role: 'user' })
 
-        expect(response.statusCode).toBe(401)
+        expect(response.statusCode).toBe(403)
+        expect(response.body).toHaveProperty('success', false)
     })
 
-    it('Trying to create user with invalid form data should return stataus 400', async () => {
-        const response = await request().post('/api/users').set('Authorization', getDefaultToken()).send({})
+    it('Creating user with user token should return status code 403', async () => {
+        const response = await request().post('/api/users')
+            .set('Authorization', getUserToken())
+            .send({ name: 'John Doe', email: 'johndoe@test.com', password: 'password', role: 'user' })
 
-        expect(response.statusCode).toBe(400)
+        expect(response.statusCode).toBe(403)
+        expect(response.body).toHaveProperty('success', false)
     })
 
-    it('Trying to create user that has already exists should return status 400', async () => {
-        const response = await request().post('/api/users').set('Authorization', getDefaultToken()).send(defaultUser)
-
-        expect(response.statusCode).toBe(400)
-    })
-
-    it('Trying to create user with valid form data should return status 201 and user', async () => {
-        const response = await request().post('/api/users').set('Authorization', getDefaultToken()).send(userData)
+    it('Creating user with admin token should return status code 201 and user', async () => {
+        const response = await request().post('/api/users')
+            .set('Authorization', getAdminToken())
+            .send({ name: 'John Doe', email: 'johndoe@test.com', password: 'password', role: 'user' })
 
         expect(response.statusCode).toBe(201)
+        expect(response.body).toHaveProperty('success', true)
         expect(response.body).toHaveProperty('data')
-        expect(response.body.data).toHaveProperty('name', userData.name)
-        createdUser = response.body.data
-        expect(createdUser).toHaveProperty('_id')
-        expect(createdUser).toHaveProperty('email', userData.email)
+        expect(response.body.data).toHaveProperty('_id')
+        expect(response.body.data).toHaveProperty('name', 'John Doe')
+        expect(response.body.data).toHaveProperty('email', 'johndoe@test.com')
+        expect(response.body.data).toHaveProperty('role', 'user')
     })
 })
 
 /**
- * @descriptionTest GET /api/users/:id
+ * @descriptionTest Get user by id
+ * @endpoint GET /api/users/:id
+ * @access Admin
+ * @returns { success, message, data }
  */
 describe('GET /users/:id', () => {
-    it('Trying to get user without authorization token should return status 401', async () => {
-        const response = await request().get('/api/users/1')
+    it('Getting user without token should return status code 403', async () => {
+        const response = await request().get('/api/users/5f7e1b9b9b9b9b9b9b9b9b9b')
+            .send()
 
-        expect(response.statusCode).toBe(401)
+        expect(response.statusCode).toBe(403)
+        expect(response.body).toHaveProperty('success', false)
     })
 
-    it('Trying to get non existed user should return 404', async () => {
-        const response = await request().get('/api/users/1').set('Authorization', getDefaultToken())
+    it('Getting user with user token should return status code 403', async () => {
+        const response = await request().get('/api/users/5f7e1b9b9b9b9b9b9b9b9b9b')
+            .set('Authorization', getUserToken())
+            .send()
+
+        expect(response.statusCode).toBe(403)
+        expect(response.body).toHaveProperty('success', false)
+    })
+
+    it('Getting user with nonexistent id should return status code 404', async () => {
+        const response = await request().get('/api/users/5f7e1b9b9b9b9b9b9b9b9b9b')
+            .set('Authorization', getAdminToken())
+            .send()
 
         expect(response.statusCode).toBe(404)
+        expect(response.body).toHaveProperty('success', false)
     })
 
-    it('Successfully creating user should return 200 and user', async () => {
-        const { email, _id } = createdUser
-        const response = await request().get(`/api/users/${_id}`).set('Authorization', getDefaultToken())
+    it('Getting user with admin token should return status code 200 and user', async () => {
+        const { _id } = getUserData()
+        const response = await request().get(`/api/users/${_id}`)
+            .set('Authorization', getAdminToken())
+            .send()
 
         expect(response.statusCode).toBe(200)
+        expect(response.body).toHaveProperty('success', true)
         expect(response.body).toHaveProperty('data')
-        expect(response.body.data).toHaveProperty('email', email)
+        expect(response.body.data).toHaveProperty('_id')
+        expect(response.body.data).toHaveProperty('name')
+        expect(response.body.data).toHaveProperty('email')
+        expect(response.body.data).toHaveProperty('role')
     })
 })
 
 /**
- * @descriptionTest PUT /api/users/:id
+ * @descriptionTest Update user by id
+ * @endpoint PUT /api/users/:id
+ * @access Admin
+ * @body { name, email, password, profilePicture, role }
+ * @returns { success, message, data }
  */
 describe('PUT /users/:id', () => {
-    it('Trying to update user without authorization token should return status 401', async () => {
-        const response = await request().put('/api/users/1')
+    it('Updating user without token should return status code 403', async () => {
+        const response = await request().put('/api/users/5f7e1b9b9b9b9b9b9b9b9b9b')
+            .send({ name: 'John Doe', email: 'johndoe@test.com', password: 'password', role: 'user' })
 
-        expect(response.statusCode).toBe(401)
+        expect(response.statusCode).toBe(403)
+        expect(response.body).toHaveProperty('success', false)
     })
 
-    it('Trying to update user with incorrect user id should return 404', async () => {
-        const response = await request().put('/api/users/1').set('Authorization', getDefaultToken())
+    it('Updating user with user token should return status code 403', async () => {
+        const response = await request().put('/api/users/5f7e1b9b9b9b9b9b9b9b9b9b')
+            .set('Authorization', getUserToken())
+            .send({ name: 'John Doe', email: 'johndoetest.com', password: 'password', role: 'user' })
+
+        expect(response.statusCode).toBe(403)
+        expect(response.body).toHaveProperty('success', false)
+    })
+
+    it('Updating user with nonexistent id should return status code 404', async () => {
+        const response = await request().put('/api/users/5f7e1b9b9b9b9b9b9b9b9b9b')
+            .set('Authorization', getAdminToken())
+            .send({ name: 'John Doe', email: 'johndoe@test.com', password: 'password', role: 'user' })
 
         expect(response.statusCode).toBe(404)
+        expect(response.body).toHaveProperty('success', false)
     })
 
-    it('Successfully updating user should return 200 and updated user', async () => {
-        const { _id } = createdUser
-        const response = await request().put(`/api/users/${_id}`).set('Authorization', getDefaultToken()).send({
-            name: 'John Due',
-            email: 'johndue@mail.com',
-            password: 'password'
-        })
+    it('Updating user with admin token should return status code 200 and user', async () => {
+        const { _id } = getUserData()
+        const response = await request().put(`/api/users/${_id}`)
+            .set('Authorization', getAdminToken())
+            .send({ name: 'John Due', email: 'johndue@test.com', password: 'password', role: 'user' })
 
         expect(response.statusCode).toBe(200)
+        expect(response.body).toHaveProperty('success', true)
         expect(response.body).toHaveProperty('data')
+        expect(response.body.data).toHaveProperty('_id')
         expect(response.body.data).toHaveProperty('name', 'John Due')
-        expect(response.body.data).toHaveProperty('email', 'johndue@mail.com')
+        expect(response.body.data).toHaveProperty('email', 'johndue@test.com')
+        expect(response.body.data).toHaveProperty('role', 'user')
     })
 })
 
 /**
- * @descriptionTest DELETE /api/users/:id
+ * @descriptionTest Delete user by id
+ * @endpoint DELETE /api/users/:id
+ * @access Admin
+ * @returns { success, message }
  */
 describe('DELETE /users/:id', () => {
-    it('Trying to delete user without authorization token should return status 401', async () => {
-        const response = await request().delete('/api/users/1')
+    it('Deleting user without token should return status code 403', async () => {
+        const response = await request().delete('/api/users/5f7e1b9b9b9b9b9b9b9b9b9b')
+            .send()
 
-        expect(response.statusCode).toBe(401)
+        expect(response.statusCode).toBe(403)
+        expect(response.body).toHaveProperty('success', false)
     })
 
-    it('Trying to delete user with incorrect user id should return 404', async () => {
-        const response = await request().delete('/api/users/1').set('Authorization', getDefaultToken())
+    it('Deleting user with user token should return status code 403', async () => {
+        const response = await request().delete('/api/users/5f7e1b9b9b9b9b9b9b9b9b9b')
+            .set('Authorization', getUserToken())
+            .send()
+
+        expect(response.statusCode).toBe(403)
+        expect(response.body).toHaveProperty('success', false)
+    })
+
+    it('Deleting user with nonexistent id should return status code 404', async () => {
+        const response = await request().delete('/api/users/5f7e1b9b9b9b9b9b9b9b9b9b')
+            .set('Authorization', getAdminToken())
+            .send()
 
         expect(response.statusCode).toBe(404)
+        expect(response.body).toHaveProperty('success', false)
     })
 
-    it('Successfully deleting user should return 200 and deleted user', async () => {
-        const { _id } = createdUser
-        const response = await request().delete(`/api/users/${_id}`).set('Authorization', getDefaultToken())
+    it('Deleting user with admin token should return status code 200 and user', async () => {
+        const { _id } = getUserData()
+        const response = await request().delete(`/api/users/${_id}`)
+            .set('Authorization', getAdminToken())
+            .send()
 
         expect(response.statusCode).toBe(200)
-        expect(response.body).toHaveProperty('data')
-        expect(response.body.data).toHaveProperty('_id', _id)
+        expect(response.body).toHaveProperty('success', true)
     })
 })
