@@ -1,9 +1,12 @@
 import User from '@src/app/models/user'
-import { validatePassword, generateToken, AuthRequest } from '@src/lib/auth'
+import { AuthRequest } from '@src/app/middlewares/auth'
 import { Request, Response } from 'express'
+import { logger } from '@src/lib/winston'
 
 /**
- * @description Validate user login credentials
+ * @description Method to validate user credentials,
+ * if valid, it will return the user token and user data
+ *
  * @param {Request} req
  * @param {Response} res
  */
@@ -13,7 +16,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
         if (!email || !password) {
             res.status(400).json({
-                error: 'Email and password are required'
+                success: false,
+                message: 'Email and password are required'
             })
             return
         }
@@ -21,33 +25,41 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         const user = await User.findOne({ email })
         if (!user.email) {
             res.status(401).json({
-                message: 'User not found'
+                success: false,
+                message: 'Invalid credentials'
             })
             return
         }
 
-        const isValid = await validatePassword(user, password)
+        const isValid = await user.validatePassword(password)
         if (!isValid) {
             res.status(401).json({
-                message: 'Invalid password'
+                success: false,
+                message: 'Invalid credentials'
             })
             return
         }
 
-        const token = await generateToken(user)
+        const token = await user.generateToken()
         res.json({
-            user,
+            success: true,
+            message: 'User logged in',
+            data: user,
             token
         })
     } catch (error) {
+        logger.log('error', error.message)
         res.status(500).json({
+            success: false,
             message: error.message
         })
     }
 }
 
 /**
- * @description Register new user
+ * @description Method to validate user data and create a new user
+ * return the created user token and data
+ *
  * @param {Request} req
  * @param {Response} res
  */
@@ -58,7 +70,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         // Check if input is valid
         if (!name || !email || !password) {
             res.status(400).json({
-                error: 'Name, email and password are required'
+                success: false,
+                message: 'Name, email and password are required'
             })
             return
         }
@@ -67,6 +80,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         const isExists = await User.findOne({ email })
         if (isExists) {
             res.status(400).json({
+                success: false,
                 error: 'User already exists'
             })
             return
@@ -78,32 +92,33 @@ export const register = async (req: Request, res: Response): Promise<void> => {
             password
         })
         await user.save()
-        const token: string = await generateToken(user)
+        const token: string = await user.generateToken()
 
         res.status(201).json({
-            user,
+            success: true,
+            message: 'User created',
+            data: user,
             token
         })
     } catch (error) {
+        logger.log('error', error.message)
         res.status(500).json({
+            success: false,
             message: error.message
         })
     }
 }
 
 /**
- * @description Get logged in user profile
+ * @description Method to return the logged in user data
+ *
  * @param {AuthRequest} req
  * @param {Response} res
  */
 export const profile = async (req: AuthRequest, res: Response): Promise<void> => {
-    if (req.user) {
-        res.json({
-            user: req.user
-        })
-    } else {
-        res.status(401).json({
-            message: 'Unauthorized'
-        })
-    }
+    res.json({
+        success: true,
+        message: 'User profile',
+        data: req.user
+    })
 }
