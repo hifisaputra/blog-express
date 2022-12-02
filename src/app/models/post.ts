@@ -2,6 +2,7 @@ import { Schema, Types, Model, model } from 'mongoose'
 import MongooseDelete from 'mongoose-delete'
 import { strToSlug } from '@src/lib/utils'
 import { PaginationParameters } from '@src/lib/mongoosePagination'
+import { paginate } from '@src/lib/mongoosePagination'
 
 /**
  * @description The post document interface
@@ -95,6 +96,11 @@ const PostSchema: Schema<PostDocument, PostModel, PostMethod> = new Schema<PostD
 PostSchema.plugin(MongooseDelete)
 
 /**
+ * @description Register mongoose pagination plugin
+ */
+PostSchema.plugin(paginate)
+
+/**
  * @description Method to generate unique slug from title
  * if slug is already exist, it will append number to the end of slug
  *
@@ -110,33 +116,6 @@ PostSchema.method('generateSlug', async function() {
         slug = `${slug}-${count}`
     }
     return slug
-})
-
-/**
- * @description Method to paginate post
- * @method static
- * @param {string} 'paginate'
- * @param {function} async function
- * @returns {Promise<Record<string, unknown>>}
- */
-PostSchema.static('paginate', async function(query: Record<string, unknown>, options: PaginationParameters) {
-    const { page, limit, sort } = options
-    const skip = (page - 1) * limit
-    const count = await this.countDocuments(query)
-    const pages = Math.ceil(count / limit)
-    const docs = await this.find(query)
-        .skip(skip)
-        .limit(limit)
-        .sort(sort)
-    return {
-        data: docs,
-        meta: {
-            page,
-            limit,
-            pages,
-            count
-        }
-    }
 })
 
 /**

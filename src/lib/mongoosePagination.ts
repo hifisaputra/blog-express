@@ -1,4 +1,4 @@
-import { SortOrder } from 'mongoose'
+import { Schema, SortOrder } from 'mongoose'
 
 export interface PaginationParameters {
     page: number
@@ -15,4 +15,27 @@ export interface PaginationResult {
         pages: number
         count: number
     }
+}
+
+export const paginate = function (schema: Schema) {
+    schema.static('paginate', async function (query: Record<string, unknown>, options: PaginationParameters) {
+        const { page, limit, sort } = options
+        const skip = (page - 1) * limit
+        const count = await this.countDocuments(query)
+        const pages = Math.ceil(count / limit)
+        const docs = await this.find(query)
+            .skip(skip)
+            .limit(limit)
+            .sort(sort)
+            .populate(options.populate)
+        return {
+            data: docs,
+            meta: {
+                page,
+                limit,
+                pages,
+                count
+            }
+        }
+    })
 }

@@ -18,7 +18,7 @@ Other commands available are:
 > npm run build
 > npm run start
 
-# run unit tests
+# run integration tests
 > npm run test
 ```
 
