@@ -22,6 +22,10 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
+    await deleteAllUsers()
+    await deleteAllCategories()
+    await deleteAllPosts()
+
     await closeDB()
 
 })

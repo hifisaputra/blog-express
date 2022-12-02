@@ -37,5 +37,5 @@ export const createAdminToken = async (): Promise<string> => {
 }
 
 export const deleteAllUsers = async (): Promise<void> => {
-    await User.deleteMany({})
+    await User.deleteMany({ email: /.*test\.com.*/ })
 }

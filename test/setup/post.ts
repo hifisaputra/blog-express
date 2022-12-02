@@ -4,7 +4,7 @@ import { userData } from './auth'
 
 export const postData = {
     _id: '5f1b9b9b9b9b9b9b9b9b9b9b',
-    title: 'Test Post',
+    title: '[Test] Post',
     content: 'Lorem ipsum dolor sir amet',
     excerpt: 'Lorem ipsum dolor sir amet',
     featuredImage: 'https://picsum.photos/200/300',
@@ -27,5 +27,5 @@ export const createPost = async (): Promise<void> => {
  * @returns {Promise<void>}
  */
 export const deleteAllPosts = async (): Promise<void> => {
-    await Post.deleteMany({})
+    await Post.deleteMany({ title: /.*\[Test\].*/ })
 }

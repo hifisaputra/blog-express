@@ -65,11 +65,13 @@ describe('POST /categories', () => {
     it('Creating category with admin token should return status code 201 and category', async () => {
         const response = await request().post('/api/categories')
             .set('Authorization', getAdminToken())
-            .send({ name: 'Category 1', description: 'Category 1 description' })
+            .send({ name: '[Test] Category 1', description: 'Category 1 description' })
 
         expect(response.statusCode).toBe(201)
         expect(response.body).toHaveProperty('success', true)
         expect(response.body).toHaveProperty('data')
+        expect(response.body.data).toHaveProperty('name', '[Test] Category 1')
+        expect(response.body.data).toHaveProperty('description', 'Category 1 description')
     })
 })
 
@@ -159,14 +161,14 @@ describe('PUT /categories/:id', () => {
         const { _id } = getCategoryData()
         const response = await request().put(`/api/categories/${_id}`)
             .set('Authorization', getAdminToken())
-            .send({ name: 'Category 1', description: 'Category 1 description' })
+            .send({ name: '[Test] Category Updated', description: 'Category description Updated' })
 
         expect(response.statusCode).toBe(200)
         expect(response.body).toHaveProperty('success', true)
         expect(response.body).toHaveProperty('data')
         expect(response.body.data).toHaveProperty('_id', _id)
-        expect(response.body.data).toHaveProperty('name', 'Category 1')
-        expect(response.body.data).toHaveProperty('description', 'Category 1 description')
+        expect(response.body.data).toHaveProperty('name', '[Test] Category Updated')
+        expect(response.body.data).toHaveProperty('description', 'Category description Updated')
     })
 })
 
