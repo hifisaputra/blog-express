@@ -21,3 +21,13 @@ Other commands available are:
 # run unit tests
 > npm run test
 ```
+
+Setup with docker:
+
+``` bash
+# rename .env.example to .env
+> cp .env.example .env
+
+# start container
+> docker compose up -d
+```

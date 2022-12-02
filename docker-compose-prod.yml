@@ -17,8 +17,6 @@ services:
       - DB_HOST=db
       - DB_PORT=27017
       - DB_NAME=blog
-    ports:
-      - ${APP_PORT}:${APP_PORT}
     depends_on:
         - db
     volumes:
