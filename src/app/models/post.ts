@@ -41,6 +41,7 @@ interface PostMethod {
  * @description The post model interface for registering custom static method
  * @interface PostModel
  * @extends Model<PostDocument>
+ * TODO: Find a way to extend the static method trough paginate plugin
  */
 interface PostModel extends Model<PostDocument, Record<string, unknown>, PostMethod>{
     paginate(query: Record<string, unknown>, options: Record<string, unknown>): Promise<Record<string, unknown>>

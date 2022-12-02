@@ -3,6 +3,7 @@ import MongooseDelete from 'mongoose-delete'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import config from '@src/config'
+import { paginate } from '@src/lib/mongoosePagination'
 
 /**
  * @description The user document interface
@@ -35,11 +36,13 @@ interface UserMethod {
 /**
  * @description The user model interface for register custom static methods
  * @interface UserModel
+ * TODO: Find a way to extend the static paginate method trough paginate plugin
  */
 interface UserModel extends Model<UserDocument, Record<string, unknown>, UserMethod> {
     findByEmail(email: string): Promise<UserDocument | null>,
     emailExists(email: string): Promise<boolean>,
-    verifyToken(token: string): Promise<UserDocument | null>
+    verifyToken(token: string): Promise<UserDocument | null>,
+    paginate(query: Record<string, unknown>, options: Record<string, unknown>): Promise<Record<string, unknown>>
 }
 
 /**
@@ -52,12 +55,14 @@ interface UserModel extends Model<UserDocument, Record<string, unknown>, UserMet
 const UserSchema: Schema<UserDocument, UserModel, UserMethod> = new Schema<UserDocument, UserModel, UserMethod>({
     name: {
         type: String,
-        required: true
+        required: true,
+        text: true,
     },
     email: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        text: true,
     },
     password: {
         type: String,
@@ -79,6 +84,11 @@ const UserSchema: Schema<UserDocument, UserModel, UserMethod> = new Schema<UserD
  * @see https://www.npmjs.com/package/mongoose-delete
  */
 UserSchema.plugin(MongooseDelete)
+
+/**
+ * @description Register paginate plugin
+ */
+UserSchema.plugin(paginate)
 
 /**
  * @description Method to validate user password

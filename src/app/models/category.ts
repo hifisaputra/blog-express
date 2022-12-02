@@ -2,6 +2,7 @@ import mongoose from '@src/lib/mongoose'
 import { Schema, Types, Model } from 'mongoose'
 import MongooseDelete from 'mongoose-delete'
 import { strToSlug } from '@src/lib/utils'
+import { paginate } from '@src/lib/mongoosePagination'
 
 /**
  * @description The category document interface
@@ -28,8 +29,11 @@ interface CategoryMethod {
 /**
  * @description The category model interface for register custom static methods
  * @interface CategoryModel
+ * TODO: Find a way to extend the static method trough paginate plugin
  */
-type CategoryModel = Model<CategoryDocument, Record<string, unknown>, CategoryMethod>
+interface CategoryModel extends Model<CategoryDocument, Record<string, unknown>, CategoryMethod> {
+    paginate(query: Record<string, unknown>, options: Record<string, unknown>): Promise<Record<string, unknown>>
+}
 
 /**
  * @description Category database schema
@@ -41,7 +45,8 @@ type CategoryModel = Model<CategoryDocument, Record<string, unknown>, CategoryMe
 const CategorySchema: Schema<CategoryDocument, CategoryModel, CategoryMethod> = new Schema<CategoryDocument, CategoryModel, CategoryMethod>({
     name: {
         type: String,
-        required: true
+        required: true,
+        text: true,
     },
     slug: {
         type: String,
@@ -60,6 +65,11 @@ const CategorySchema: Schema<CategoryDocument, CategoryModel, CategoryMethod> = 
  * @see https://www.npmjs.com/package/mongoose-delete
  */
 CategorySchema.plugin(MongooseDelete)
+
+/**
+ * @description Register pagination plugin to schema
+ */
+CategorySchema.plugin(paginate)
 
 /**
  * @description Method to generate unique slug from name

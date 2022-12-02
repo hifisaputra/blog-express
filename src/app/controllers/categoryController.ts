@@ -4,6 +4,13 @@ import { logger } from '@src/lib/winston'
 
 /**
  * @description Method to get all categories
+ * returns the result in paginated format.
+ *
+ * The available query string used for filtering:
+ * - page: the page number
+ * - limit: the number of category per page
+ * - sort: the sort order
+ * - search: the search query
  *
  * @param {Request} req
  * @param {Response} res
@@ -12,17 +19,29 @@ import { logger } from '@src/lib/winston'
  */
 export const fetch = async (req: Request, res: Response): Promise<void> => {
     try {
-        const categories = await Category.find({})
-        res.json({
+        const { page, limit, sort, search } = req.query
+        const query: Record<string, unknown> = {}
+        const options: Record<string, unknown> = {
+            page: page || 1,
+            limit: limit || 10,
+            sort: sort || { createdAt: -1 },
+        }
+
+        if (search) {
+            query.$text = { $search: search }
+        }
+
+        const result = await Category.paginate(query, options)
+        res.status(200).json({
             success: true,
-            message: 'Categories fetched successfully',
-            data: categories,
+            message: 'Successfully fetched categories',
+            ...result
         })
     } catch (error) {
-        logger.log('error', error.message)
+        logger.error(error)
         res.status(500).json({
             success: false,
-            message: error.message
+            message: 'Failed to fetch categories'
         })
     }
 }
