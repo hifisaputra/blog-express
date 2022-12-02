@@ -4,7 +4,7 @@ import { request, getUserToken, getAdminToken, getCategoryData } from './setup'
  * @descriptionTest Get list of categories
  * @endpoint GET /api/categories
  * @access Public
- * @returns { success, message, data }
+ * @returns { success, message, data, meta }
  */
 describe('GET /categories', () => {
     it('Accessing categories without token should return status code 200', async () => {
@@ -34,6 +34,24 @@ describe('GET /categories', () => {
         expect(response.statusCode).toBe(200)
         expect(response.body).toHaveProperty('success', true)
         expect(response.body).toHaveProperty('data')
+        expect(response.body.data).toHaveLength(10)
+        expect(response.body.data[0]).toHaveProperty('_id')
+        expect(response.body.data[0]).toHaveProperty('name')
+        expect(response.body.data[0]).toHaveProperty('description')
+    })
+
+    it('Using the search filter should only returns categories that match the search query', async () => {
+        const response = await request().get('/api/categories')
+            .set('Authorization', getAdminToken())
+            .query({ search: 'Test' })
+            .send()
+
+        expect(response.statusCode).toBe(200)
+        expect(response.body).toHaveProperty('success', true)
+        expect(response.body).toHaveProperty('data')
+        expect(response.body.data).toHaveLength(1)
+        expect(response.body.data[0]).toHaveProperty('_id')
+        expect(response.body.data[0]).toHaveProperty('name', '[Test] Category')
     })
 })
 

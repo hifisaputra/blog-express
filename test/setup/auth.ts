@@ -2,7 +2,7 @@ import User from '../../src/app/models/user'
 
 export const userData = {
     _id: '5f9f1b9b9c9d9c0b8c8b8b8b',
-    name: 'John Doe',
+    name: '[Test] User',
     email: 'user@test.com',
     password: 'password',
     role: 'user',
