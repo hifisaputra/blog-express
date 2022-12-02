@@ -8,7 +8,7 @@ const seed = async (): Promise<void> => {
 
     await populateUsers(10)
     await populateCategories(20)
-    await populatePosts(9000000)
+    await populatePosts(100)
 
     await closeDB()
 }

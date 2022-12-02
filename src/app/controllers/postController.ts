@@ -5,6 +5,16 @@ import { AuthRequest } from '@src/app/middlewares/auth'
 
 /**
  * @description Show list of all available post
+ * returns the result in paginated format.
+ *
+ * The available query string used for filtering:
+ * - page: the page number
+ * - limit: the number of post per page
+ * - sort: the sort order
+ * - status: the post status
+ * - category: the post category
+ * - author: the post author
+ * - search: the search query
  *
  * @param {Request} req
  * @param {Response} res
@@ -13,13 +23,41 @@ import { AuthRequest } from '@src/app/middlewares/auth'
  */
 export const fetch = async (req: Request, res: Response): Promise<void> => {
     try {
-        const posts = await Post.find({})
+        const { page, limit, sort, status, category, author, search } = req.query
+        const query: Record<string, unknown> = {}
+        const options: Record<string, unknown> = {
+            page: page || 1,
+            limit: limit || 10,
+            sort: sort || { createdAt: -1 },
+            populate: [
+                { path: 'author', select: 'name' },
+                { path: 'categories', select: 'name' }
+            ]
+        }
 
-        res.json({
+        if (status) {
+            query.status = status
+        }
+
+        if (category) {
+            query.categories = category
+        }
+
+        if (author) {
+            query.author = author
+        }
+
+        if (search) {
+            query.$title = { $search: search }
+        }
+
+        const result = await Post.paginate(query, options)
+        res.status(200).json({
             success: true,
-            message: 'Posts fetched successfully',
-            data: posts,
+            message: 'Successfully fetched posts',
+            ...result
         })
+
     } catch (error) {
         logger.log('error', error.message)
         res.status(500).json({

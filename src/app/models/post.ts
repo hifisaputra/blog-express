@@ -1,6 +1,7 @@
 import { Schema, Types, Model, model } from 'mongoose'
 import MongooseDelete from 'mongoose-delete'
 import { strToSlug } from '@src/lib/utils'
+import { PaginationParameters } from '@src/lib/mongoosePagination'
 
 /**
  * @description The post document interface
@@ -15,7 +16,7 @@ import { strToSlug } from '@src/lib/utils'
  * @property {string} author The post author id
  * @property {string[]} categories The post categories in array of string id
  */
-interface PostDocument {
+export interface PostDocument {
     _id: Types.ObjectId,
     title: string,
     slug?: string,
@@ -28,7 +29,7 @@ interface PostDocument {
 }
 
 /**
- * @description The post method interface
+ * @description The post method interface for regsitering custom method
  * @interface PostMethod
  */
 interface PostMethod {
@@ -36,11 +37,13 @@ interface PostMethod {
 }
 
 /**
- * @description The post model interface
+ * @description The post model interface for registering custom static method
  * @interface PostModel
  * @extends Model<PostDocument>
  */
-type PostModel = Model<PostDocument, Record<string, unknown>, PostMethod>
+interface PostModel extends Model<PostDocument, Record<string, unknown>, PostMethod>{
+    paginate(query: Record<string, unknown>, options: Record<string, unknown>): Promise<Record<string, unknown>>
+}
 
 /**
  * @description Post database schema
@@ -106,6 +109,33 @@ PostSchema.method('generateSlug', async function() {
         slug = `${slug}-${count}`
     }
     return slug
+})
+
+/**
+ * @description Method to paginate post
+ * @method static
+ * @param {string} 'paginate'
+ * @param {function} async function
+ * @returns {Promise<Record<string, unknown>>}
+ */
+PostSchema.static('paginate', async function(query: Record<string, unknown>, options: PaginationParameters) {
+    const { page, limit, sort } = options
+    const skip = (page - 1) * limit
+    const count = await this.countDocuments(query)
+    const pages = Math.ceil(count / limit)
+    const docs = await this.find(query)
+        .skip(skip)
+        .limit(limit)
+        .sort(sort)
+    return {
+        data: docs,
+        meta: {
+            page,
+            limit,
+            pages,
+            count
+        }
+    }
 })
 
 /**
