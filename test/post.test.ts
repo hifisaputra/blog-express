@@ -4,7 +4,8 @@ import { request, getUserToken, getAdminToken, getCategoryData, getAdminData, ge
  * @descriptionTest Get list of posts
  * @endpoint GET /api/posts
  * @access Public
- * @returns { success, message, data }
+ * @body { limit, page, status, author, categories, search }
+ * @returns { success, message, data, meta }
  */
 describe('GET /posts', () => {
     it('Accessing posts without token should return status code 200', async () => {
@@ -34,6 +35,13 @@ describe('GET /posts', () => {
         expect(response.statusCode).toBe(200)
         expect(response.body).toHaveProperty('success', true)
         expect(response.body).toHaveProperty('data')
+        expect(response.body.data).toHaveLength(10)
+        expect(response.body.data[0]).toHaveProperty('title')
+        expect(response.body.data[0]).toHaveProperty('excerpt')
+        expect(response.body.data[0]).toHaveProperty('slug')
+        expect(response.body.data[0]).toHaveProperty('status')
+        expect(response.body.data[0]).toHaveProperty('author')
+        expect(response.body.data[0]).toHaveProperty('categories')
     })
 })
 
@@ -69,7 +77,7 @@ describe('POST /posts', () => {
         const response = await request().post('/api/posts')
             .set('Authorization', getAdminToken())
             .send({
-                title: 'Post 1',
+                title: '[Test] Post 1',
                 content: 'Post 1 content',
                 excerpt: 'Post 1 excerpt',
                 featuredImage: 'Post 1 featured image',
@@ -80,7 +88,7 @@ describe('POST /posts', () => {
         expect(response.statusCode).toBe(201)
         expect(response.body).toHaveProperty('success', true)
         expect(response.body).toHaveProperty('data')
-        expect(response.body.data).toHaveProperty('title', 'Post 1')
+        expect(response.body.data).toHaveProperty('title', '[Test] Post 1')
         expect(response.body.data).toHaveProperty('content', 'Post 1 content')
         expect(response.body.data).toHaveProperty('excerpt', 'Post 1 excerpt')
         expect(response.body.data).toHaveProperty('featuredImage', 'Post 1 featured image')
@@ -168,7 +176,7 @@ describe('PUT /posts/:id', () => {
         const response = await request().put(`/api/posts/${postData._id}`)
             .set('Authorization', getAdminToken())
             .send({
-                title: 'Post 1 updated',
+                title: '[Test] Post 1 updated',
                 content: 'Post 1 content updated',
                 excerpt: 'Post 1 excerpt updated',
                 featuredImage: 'Post 1 featured image updated',
@@ -178,7 +186,7 @@ describe('PUT /posts/:id', () => {
         expect(response.statusCode).toBe(200)
         expect(response.body).toHaveProperty('success', true)
         expect(response.body).toHaveProperty('data')
-        expect(response.body.data).toHaveProperty('title', 'Post 1 updated')
+        expect(response.body.data).toHaveProperty('title', '[Test] Post 1 updated')
         expect(response.body.data).toHaveProperty('content', 'Post 1 content updated')
         expect(response.body.data).toHaveProperty('excerpt', 'Post 1 excerpt updated')
         expect(response.body.data).toHaveProperty('featuredImage', 'Post 1 featured image updated')
