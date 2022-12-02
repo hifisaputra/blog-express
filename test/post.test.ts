@@ -77,7 +77,8 @@ describe('GET /posts', () => {
         expect(response.body).toHaveProperty('success', true)
         expect(response.body).toHaveProperty('data')
         expect(response.body.data).toHaveLength(1)
-        expect(response.body.data[0]).toHaveProperty('author', getAdminData()._id)
+        expect(response.body.data[0]).toHaveProperty('author')
+        expect(response.body.data[0].author).toHaveProperty('_id', getAdminData()._id)
     })
 
     it('Using the categories filter should only returns post from the categories',async () => {
@@ -91,7 +92,7 @@ describe('GET /posts', () => {
         expect(response.body.data).toHaveLength(1)
         expect(response.body.data[0]).toHaveProperty('categories')
         expect(response.body.data[0].categories).toHaveLength(1)
-        // expect(response.body.data[0].categories[0]).toHaveProperty('_id', getCategoryData()._id)
+        expect(response.body.data[0].categories[0]).toHaveProperty('_id', getCategoryData()._id)
     })
 
     it('Using the search filter should only returns post that match the search query',async () => {
