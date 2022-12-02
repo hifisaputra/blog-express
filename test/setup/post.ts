@@ -1,6 +1,6 @@
 import Post from '../../src/app/models/post'
 import { categoryData } from './category'
-import { userData } from './auth'
+import { adminData } from './auth'
 
 export const postData = {
     _id: '5f1b9b9b9b9b9b9b9b9b9b9b',
@@ -9,7 +9,7 @@ export const postData = {
     excerpt: 'Lorem ipsum dolor sir amet',
     featuredImage: 'https://picsum.photos/200/300',
     status: 'published',
-    author: userData._id,
+    author: adminData._id,
     categories: [categoryData._id],
 }
 

@@ -48,7 +48,7 @@ export const fetch = async (req: Request, res: Response): Promise<void> => {
         }
 
         if (search) {
-            query.$title = { $search: search }
+            query.$text = { $search: search }
         }
 
         const result = await Post.paginate(query, options)

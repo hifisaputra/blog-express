@@ -43,6 +43,68 @@ describe('GET /posts', () => {
         expect(response.body.data[0]).toHaveProperty('author')
         expect(response.body.data[0]).toHaveProperty('categories')
     })
+
+    it('Using the published status filter should only returns published post',async () => {
+        const response = await request().get('/api/posts')
+            .set('Authorization', getAdminToken())
+            .query({ status: 'published', limit: 1 })
+
+        expect(response.statusCode).toBe(200)
+        expect(response.body).toHaveProperty('success', true)
+        expect(response.body).toHaveProperty('data')
+        expect(response.body.data).toHaveLength(1)
+        expect(response.body.data[0]).toHaveProperty('status', 'published')
+    })
+
+    it('Using the draft status filter should only returns draft post',async () => {
+        const response = await request().get('/api/posts')
+            .set('Authorization', getAdminToken())
+            .query({ status: 'draft', limit: 1 })
+
+        expect(response.statusCode).toBe(200)
+        expect(response.body).toHaveProperty('success', true)
+        expect(response.body).toHaveProperty('data')
+        expect(response.body.data).toHaveLength(1)
+        expect(response.body.data[0]).toHaveProperty('status', 'draft')
+    })
+
+    it('Using the author filter should only returns post from the author',async () => {
+        const response = await request().get('/api/posts')
+            .set('Authorization', getAdminToken())
+            .query({ author: getAdminData()._id, limit: 1 })
+
+        expect(response.statusCode).toBe(200)
+        expect(response.body).toHaveProperty('success', true)
+        expect(response.body).toHaveProperty('data')
+        expect(response.body.data).toHaveLength(1)
+        expect(response.body.data[0]).toHaveProperty('author', getAdminData()._id)
+    })
+
+    it('Using the categories filter should only returns post from the categories',async () => {
+        const response = await request().get('/api/posts')
+            .set('Authorization', getAdminToken())
+            .query({ categories: [getCategoryData()._id], limit: 1 })
+
+        expect(response.statusCode).toBe(200)
+        expect(response.body).toHaveProperty('success', true)
+        expect(response.body).toHaveProperty('data')
+        expect(response.body.data).toHaveLength(1)
+        expect(response.body.data[0]).toHaveProperty('categories')
+        expect(response.body.data[0].categories).toHaveLength(1)
+        // expect(response.body.data[0].categories[0]).toHaveProperty('_id', getCategoryData()._id)
+    })
+
+    it('Using the search filter should only returns post that match the search query',async () => {
+        const response = await request().get('/api/posts')
+            .set('Authorization', getAdminToken())
+            .query({ search: 'Test', limit: 1 })
+
+        expect(response.statusCode).toBe(200)
+        expect(response.body).toHaveProperty('success', true)
+        expect(response.body).toHaveProperty('data')
+        expect(response.body.data).toHaveLength(1)
+        expect(response.body.data[0]).toHaveProperty('title', '[Test] Post')
+    })
 })
 
 /**

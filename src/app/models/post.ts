@@ -55,7 +55,8 @@ interface PostModel extends Model<PostDocument, Record<string, unknown>, PostMet
 const PostSchema: Schema<PostDocument, PostModel, PostMethod> = new Schema<PostDocument, PostModel, PostMethod>({
     title: {
         type: String,
-        required: true
+        required: true,
+        text: true
     },
     slug: {
         type: String,

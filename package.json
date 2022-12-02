@@ -7,13 +7,15 @@
   "scripts": {
     "lint": "eslint . --ext .ts",
     "prebuild": "eslint . --ext .ts --fix",
+    "seed": "ts-node src/database/seeder/index.ts",
     "build": "tsc",
     "prestart": "npm run build",
     "dev": "nodemon",
     "start": "ts-node src/index.ts",
     "test": "jest --detectOpenHandles",
     "test:watch": "jest --watch",
-    "seed": "ts-node src/database/seeder/index.ts"
+    "test:coverage": "jest --coverage",
+    "pretest": "npm run seed"
   },
   "repository": {
     "type": "git",
