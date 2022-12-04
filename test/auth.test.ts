@@ -50,6 +50,18 @@ describe('POST /login', () => {
         expect(response.body).toHaveProperty('success', false)
     })
 
+    it('Login with invalid form data should return status code 400', async () => {
+        const response = await request().post('/api/auth/login')
+            .send({
+                email: 'notanemail',
+                password: 'password'
+            })
+
+        expect(response.statusCode).toBe(400)
+        expect(response.body).toHaveProperty('success', false)
+    })
+
+
     it('Login with incorrect credentials should return status code 401', async () => {
         const response = await request().post('/api/auth/login')
             .send({ email: 'john@test.com', password: 'incorrect password' })

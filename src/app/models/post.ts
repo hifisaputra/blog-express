@@ -1,7 +1,6 @@
 import { Schema, Types, Model, model } from 'mongoose'
 import MongooseDelete from 'mongoose-delete'
 import { strToSlug } from '@src/lib/utils'
-import { PaginationParameters } from '@src/lib/mongoosePagination'
 import { paginate } from '@src/lib/mongoosePagination'
 
 /**
