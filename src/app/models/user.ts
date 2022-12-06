@@ -14,6 +14,44 @@ import { paginate } from '@src/lib/mongoosePagination'
  * @property {string} password The user password, will be hashed before save
  * @property {string} profilePicture The user profile picture url
  * @property {string} role The user role, default is 'user'
+ *
+ * @swagger
+ * components:
+ *  schemas:
+ *   User:
+ *    type: object
+ *    properties:
+ *     _id:
+ *      type: string
+ *      description: The user id is generated automatically by MongoDB
+ *      example: 5f9f1c9b9b9b9b9b9b9b9b9b
+ *     name:
+ *      type: string
+ *      description: The user name
+ *      example: John Doe
+ *     email:
+ *      type: string
+ *      uniqueItems: true
+ *      description: The user email address
+ *      example: johndoe@mail.com
+ *     profilePicture:
+ *      type: string
+ *      description: The user profile picture url
+ *      example: https://example.com/profile-picture.jpg
+ *     role:
+ *      type: string
+ *      description: The user role
+ *      enum: [user, admin]
+ *      default: user
+ *      example: user
+ *     createdAt:
+ *      type: string
+ *      description: The date when the user is created
+ *      example: 2020-10-29T09:00:00.000Z
+ *     updatedAt:
+ *      type: string
+ *      description: The date when the user is updated
+ *      example: 2020-10-29T09:00:00.000Z
  */
 export interface UserDocument {
     _id: Types.ObjectId,
